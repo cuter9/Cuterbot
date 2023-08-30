@@ -30,7 +30,7 @@ os.makedirs(DIR_DATA_REPO_PROJECT, exist_ok=True)
 DIR_DATA_REPO_THIS = os.path.join(DIR_DATA_REPO_PROJECT, "road_following")
 os.makedirs(DIR_DATA_REPO_THIS, exist_ok=True)
 
-TRAIN_MODEL = "resnet18"        # resnet18, resnet34, resnet50, resnet101
+TRAIN_MODEL = "resnet101"        # resnet18, resnet34, resnet50, resnet101
 # *** refererence : https://pytorch.org/docs/stable/optim.html#algorithms
 # use the following learning algorithms for evaluation
 TRAIN_MATHOD = "Adam"       # "Adam", "SGD", "ASGD", "Adagrad"; the parameters lr=0.01, momentum=0.92  may be needed
