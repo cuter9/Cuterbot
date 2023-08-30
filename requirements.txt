@@ -1,0 +1,13 @@
+Pillow~=8.4.0
+traitlets~=4.3.3
+torch~=1.10.0+cu102
+torchvision~=0.11.0+cu102
+opencv-python~=4.8.0.76
+numpy~=1.19.5
+pyzmq~=25.1.1
+ipywidgets~=7.8.0
+tensorrt~=8.2.1.8
+matplotlib~=3.3.4
+ipython~=7.16.3
+torch2trt~=0.4.0
+setuptools~=40.6.2
