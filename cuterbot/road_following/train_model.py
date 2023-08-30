@@ -151,17 +151,19 @@ test_loader = torch.utils.data.DataLoader(
 # More Details on Transfer Learning: https://www.youtube.com/watch?v=yofjFQddwHE 
 
 model = getattr(models, TRAIN_MODEL)()
+# model_attr = getattr(models, TRAIN_MODEL)
 # model = model_attr()
 
 optimizer = getattr(optim, TRAIN_MATHOD)(model.parameters())
+# optimizer_attr = getattr(optim, TRAIN_METHOD)
 # optimizer = optimizer_attr(model.parameters())
 
 
-# BEST_MODEL_PATH = os.path.join(DIR_DATA_REPO_THIS, "best_steering_model_xy_", "TARIN_MODEL", ".pth")
-BEST_MODEL_PATH = os.path.join(DIR_DATA_REPO_THIS, "best_steering_model_xy_tmp.pth")
+BEST_MODEL_PATH = os.path.join(DIR_DATA_REPO_THIS, "best_steering_model_xy_" + TRAIN_MODEL + ".pth")
+# BEST_MODEL_PATH = os.path.join(DIR_DATA_REPO_THIS, "best_steering_model_xy_tmp.pth")
 
 
-# ResNet model has fully connect (fc) final layer with 512 as ``in_features`` and we will be training for regression
+# ResNet model has fully connected (fc) final layer with 512 as ``in_features`` and we will be training for regression
 # thus ``out_features`` as 1
 # 
 # Finally, we transfer our model for execution on the GPU
@@ -202,7 +204,7 @@ def plot_loss(loss_data, best_loss):
     fig.canvas.flush_events()
 
 
-NUM_EPOCHS = 3
+NUM_EPOCHS = 70
 best_loss = 1e9
 
 loss_data = []
@@ -248,7 +250,7 @@ learning_time = np.array(lt)
 mean_lt = np.mean(learning_time)
 max_lt = np.amax(learning_time)
 min_lt = np.amax(learning_time)
-print("mean learning time: {:.3f}, maximum learning time: {:.3f}, minimum learning time: {:.3f}".format(mean_lt, max_lt, min_lt))
+print("mean learning time: {:.3f} s, maximum learning time: {:.3f} s, minimum learning time: {:.3f} s".format(mean_lt, max_lt, min_lt))
 # Once the model is trained, it will generate ``best_steering_model_xy_resnet34.pth`` file which you can use for
 # inferencing in the live demo notebook.
 # 
