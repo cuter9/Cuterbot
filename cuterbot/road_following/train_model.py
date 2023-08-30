@@ -251,7 +251,7 @@ mean_lt = np.mean(learning_time)
 max_lt = np.amax(learning_time)
 min_lt = np.amax(learning_time)
 print("mean learning time: {:.3f} s, maximum learning time: {:.3f} s, minimum learning time: {:.3f} s".format(mean_lt, max_lt, min_lt))
-plt.savefig("Training convergence plot_Model : {:s}_Training Method : {:s})".format(TRAIN_MODEL, TRAIN_MATHOD))
+plt.savefig("Training_convergence_plot_Model_{:s}_Training_Method_{:s})".format(TRAIN_MODEL, TRAIN_MATHOD))
 # Once the model is trained, it will generate ``best_steering_model_xy_resnet34.pth`` file which you can use for
 # inferencing in the live demo notebook.
 # 
