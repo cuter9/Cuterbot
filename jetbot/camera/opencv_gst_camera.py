@@ -1,3 +1,4 @@
+import time
 import traitlets
 import atexit
 import cv2
@@ -5,6 +6,7 @@ import threading
 import numpy as np
 from .camera_base import CameraBase
 import os
+import time
 
 SudoPass = 'cuterbot'
 
@@ -22,10 +24,12 @@ class OpenCvGstCamera(CameraBase):
     # capture_height = traitlets.Integer(default_value=616).tag(config=True)
     capture_width = traitlets.Integer(default_value=1920).tag(config=True)
     capture_height = traitlets.Integer(default_value=1080).tag(config=True)
+    cap_time = traitlets.Float(default_value=0).tag(config=True)
 
     def __init__(self, *args, **kwargs):
         self.value = np.empty((self.height, self.width, 3), dtype=np.uint8)
         self.stop_thread = threading.Event()
+        self.cap_time = 0
         super().__init__(self, *args, **kwargs)
 
         try:
@@ -47,7 +51,7 @@ class OpenCvGstCamera(CameraBase):
 
     def _capture_frames(self):
         while True:
-            
+            start = time.process_time()
             if self.stop_thread.is_set():
                 break
             
@@ -58,6 +62,8 @@ class OpenCvGstCamera(CameraBase):
                 # print(image)
                 # print("Observed and No of times previous capture nothong : ", nc)
                 nc = 0
+                end = time.process_time()
+                self.cap_time = end - start
             else:
                 if nc <= 10:
                     nc += 1

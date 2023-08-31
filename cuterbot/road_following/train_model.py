@@ -30,10 +30,10 @@ os.makedirs(DIR_DATA_REPO_PROJECT, exist_ok=True)
 DIR_DATA_REPO_THIS = os.path.join(DIR_DATA_REPO_PROJECT, "road_following")
 os.makedirs(DIR_DATA_REPO_THIS, exist_ok=True)
 
-TRAIN_MODEL = "resnet18"        # resnet18, resnet34, resnet50, resnet101
+TRAIN_MODEL = "mobilenet_v3_large"  # resnet18, resnet34, resnet50, resnet101, mobilenet_v2, vgg11, mobilenet_v3_large
 # *** refererence : https://pytorch.org/docs/stable/optim.html#algorithms
 # use the following learning algorithms for evaluation
-TRAIN_MATHOD = "SGD"       # "Adam", "SGD", "ASGD"; the parameters lr=0.01, momentum=0.92  may be needed
+TRAIN_MATHOD = "Adam"  # "Adam", "SGD", "ASGD", "Adadelta", "RAdam"; the parameters lr=0.01, momentum=0.92  may be needed
 
 # ### Download and extract data
 # 
@@ -154,8 +154,8 @@ model = getattr(models, TRAIN_MODEL)()
 # model_attr = getattr(models, TRAIN_MODEL)
 # model = model_attr()
 
-# optimizer = getattr(optim, TRAIN_MATHOD)(model.parameters())
-optimizer = getattr(optim, TRAIN_MATHOD)(model.parameters(), lr=0.01, momentum=0.95)
+optimizer = getattr(optim, TRAIN_MATHOD)(model.parameters(), weight_decay=0)
+# optimizer = getattr(optim, TRAIN_MATHOD)(model.parameters(), lr=0.01, momentum=0.95)
 # optimizer_attr = getattr(optim, TRAIN_METHOD)
 # optimizer = optimizer_attr(model.parameters())
 
@@ -172,8 +172,12 @@ BEST_MODEL_PATH = os.path.join(DIR_DATA_REPO_THIS, "best_steering_model_xy_" + T
 print("torch cuda version : ", torch.version.cuda)
 print("cuda is available for pytorch: ", torch.cuda.is_available())
 
-# model.fc = torch.nn.Linear(512, 2)
-model.fc = torch.nn.Linear(model.fc.in_features, 2)  # must add the block expansion factor 4
+# modify last layer for classification, and the model used in notebook should be modified too.
+model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features, 2)  # for mobilenet_v3 model. must add the block expansion factor 4
+# model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)  # for mobilenet_v2 model. must add the block expansion factor 4
+# model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features, 2)  # for VGG model. must add the block
+# expansion factor 4 model.fc = torch.nn.Linear(512, 2) model.fc = torch.nn.Linear(model.fc.in_features, 2)  # for resnet model must add the block expansion factor 4
+
 # ** you may use cpu for training
 device = torch.device('cuda')
 # device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
@@ -190,7 +194,7 @@ font = {'weight': 'normal', 'size': 10}
 
 def plot_loss(loss_data, best_loss):
     plt.cla()
-    epochs = range(1, len(loss_data)+1)
+    epochs = range(1, len(loss_data) + 1)
     ld_0 = [ld[0] for ld in loss_data]
     ld_1 = [ld[1] for ld in loss_data]
     ax.semilogy(epochs, ld_0, "r-", linewidth=1.0, label="Training Loss:{:.4f}".format(ld_0[-1]))
@@ -198,7 +202,7 @@ def plot_loss(loss_data, best_loss):
     xlim = epochs[-1] + 2
     ax.set_xlim(0, xlim)
     plt.legend()
-    plt.title("Training convergence plot (Model : {:s}, Training Method : {:s}) \n current best test loss : {:.4f}".\
+    plt.title("Training convergence plot (Model : {:s}, Training Method : {:s}) \n current best test loss : {:.4f}". \
               format(TRAIN_MODEL, TRAIN_MATHOD, best_loss))
     plt.xlabel('epoch', fontdict=font)
     plt.ylabel('loss', fontdict=font)
@@ -210,7 +214,7 @@ NUM_EPOCHS = 70
 best_loss = 1e9
 
 loss_data = []
-lt = []     # learning time
+lt = []  # learning time
 for epoch in range(NUM_EPOCHS):
     start = time.process_time()
     model.train()
@@ -252,7 +256,9 @@ learning_time = np.array(lt)
 mean_lt = np.mean(learning_time)
 max_lt = np.amax(learning_time)
 min_lt = np.amax(learning_time)
-print("mean learning time: {:.3f} s, maximum learning time: {:.3f} s, minimum learning time: {:.3f} s".format(mean_lt, max_lt, min_lt))
+print("mean learning time: {:.3f} s, maximum learning time: {:.3f} s, minimum learning time: {:.3f} s".format(mean_lt,
+                                                                                                              max_lt,
+                                                                                                              min_lt))
 
 file_plot = os.path.join(DIR_DATA_REPO_THIS, "Training_convergence_plot_Model_{:s}_Training_Method_{:s})".
                          format(TRAIN_MODEL, TRAIN_MATHOD))
