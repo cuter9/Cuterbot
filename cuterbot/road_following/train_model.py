@@ -173,7 +173,7 @@ print("torch cuda version : ", torch.version.cuda)
 print("cuda is available for pytorch: ", torch.cuda.is_available())
 
 # modify last layer for classification, and the model used in notebook should be modified too.
-model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features, 2)  # for mobilenet_v3 model. must add the block expansion factor 4
+model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features, 2, bias=True)  # for mobilenet_v3 model. must add the block expansion factor 4
 # model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)  # for mobilenet_v2 model. must add the block expansion factor 4
 # model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features, 2)  # for VGG model. must add the block
 # expansion factor 4 model.fc = torch.nn.Linear(512, 2) model.fc = torch.nn.Linear(model.fc.in_features, 2)  # for resnet model must add the block expansion factor 4
