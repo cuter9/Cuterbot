@@ -30,10 +30,10 @@ os.makedirs(DIR_DATA_REPO_PROJECT, exist_ok=True)
 DIR_DATA_REPO_THIS = os.path.join(DIR_DATA_REPO_PROJECT, "road_following")
 os.makedirs(DIR_DATA_REPO_THIS, exist_ok=True)
 
-TRAIN_MODEL = "resnet50"        # resnet18, resnet34, resnet50, resnet101
+TRAIN_MODEL = "resnet18"        # resnet18, resnet34, resnet50, resnet101
 # *** refererence : https://pytorch.org/docs/stable/optim.html#algorithms
 # use the following learning algorithms for evaluation
-TRAIN_MATHOD = "Adam"       # "Adam", "SGD", "ASGD", "Adagrad"; the parameters lr=0.01, momentum=0.92  may be needed
+TRAIN_MATHOD = "SGD"       # "Adam", "SGD", "ASGD"; the parameters lr=0.01, momentum=0.92  may be needed
 
 # ### Download and extract data
 # 
@@ -154,7 +154,8 @@ model = getattr(models, TRAIN_MODEL)()
 # model_attr = getattr(models, TRAIN_MODEL)
 # model = model_attr()
 
-optimizer = getattr(optim, TRAIN_MATHOD)(model.parameters())
+# optimizer = getattr(optim, TRAIN_MATHOD)(model.parameters())
+optimizer = getattr(optim, TRAIN_MATHOD)(model.parameters(), lr=0.01, momentum=0.95)
 # optimizer_attr = getattr(optim, TRAIN_METHOD)
 # optimizer = optimizer_attr(model.parameters())
 
@@ -175,6 +176,7 @@ print("cuda is available for pytorch: ", torch.cuda.is_available())
 model.fc = torch.nn.Linear(model.fc.in_features, 2)  # must add the block expansion factor 4
 # ** you may use cpu for training
 device = torch.device('cuda')
+# device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
 # device = torch.device('cpu')
 model = model.to(device)
 
@@ -251,7 +253,10 @@ mean_lt = np.mean(learning_time)
 max_lt = np.amax(learning_time)
 min_lt = np.amax(learning_time)
 print("mean learning time: {:.3f} s, maximum learning time: {:.3f} s, minimum learning time: {:.3f} s".format(mean_lt, max_lt, min_lt))
-plt.savefig("Training_convergence_plot_Model_{:s}_Training_Method_{:s})".format(TRAIN_MODEL, TRAIN_MATHOD))
+
+file_plot = os.path.join(DIR_DATA_REPO_THIS, "Training_convergence_plot_Model_{:s}_Training_Method_{:s})".
+                         format(TRAIN_MODEL, TRAIN_MATHOD))
+plt.savefig(file_plot)
 # Once the model is trained, it will generate ``best_steering_model_xy_resnet34.pth`` file which you can use for
 # inferencing in the live demo notebook.
 # 
