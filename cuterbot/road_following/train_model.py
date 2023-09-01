@@ -210,7 +210,7 @@ def plot_loss(loss_data, best_loss):
     fig.canvas.flush_events()
 
 
-NUM_EPOCHS = 70
+NUM_EPOCHS = 200
 best_loss = 1e9
 
 loss_data = []
