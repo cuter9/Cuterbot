@@ -297,7 +297,7 @@ training_time_file = os.path.join(DIR_DATA_REPO_THIS, "Training_time_Model_{:s}_
 fig_2.savefig(training_time_file)
 
 # Once the model is trained, it will generate ``best_steering_model_xy_resnet34.pth`` file which you can use for
-# inferencing in the live demo notebook.
+# inference in the live demo notebook.
 # 
 # If you trained on a different machine other than JetBot, you'll need to upload this to the JetBot to the
 # ``road_following`` example folder.
