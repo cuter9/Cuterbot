@@ -32,7 +32,7 @@ os.makedirs(DIR_DATA_REPO_PROJECT, exist_ok=True)
 DIR_DATA_REPO_THIS = os.path.join(DIR_DATA_REPO_PROJECT, "road_following")
 os.makedirs(DIR_DATA_REPO_THIS, exist_ok=True)
 
-TRAIN_MODEL = "mobilenet_v3_large"  # resnet18, resnet34, resnet50, resnet101, mobilenet_v2, vgg11, mobilenet_v3_large
+TRAIN_MODEL = "resnet18"  # resnet18, resnet34, resnet50, resnet101, mobilenet_v2, vgg11, mobilenet_v3_large
 # *** refererence : https://pytorch.org/docs/stable/optim.html#algorithms
 # use the following learning algorithms for evaluation
 TRAIN_MATHOD = "Adam"  # "Adam", "SGD", "ASGD", "Adadelta", "RAdam"; the parameters lr=0.01, momentum=0.92  may be needed
@@ -46,9 +46,8 @@ TRAIN_MATHOD = "Adam"  # "Adam", "SGD", "ASGD", "Adadelta", "RAdam"; the paramet
 # 
 # You should then extract this dataset by calling the command below:
 
-
-# get_ipython().system('unzip -q road_following.zip')
-ZipFile(os.path.join(DIR_DATA_REPO_THIS, 'dataset_xy.zip')).extractall(path=DIR_DATA_REPO_THIS)
+DATA_FILE = "dataset_xy_0907"
+ZipFile(os.path.join(DIR_DATA_REPO_THIS, DATA_FILE+'.zip')).extractall(path=DIR_DATA_REPO_THIS)
 
 
 # You should see a folder named ``dataset_all`` appear in the file browser.
@@ -175,12 +174,12 @@ print("torch cuda version : ", torch.version.cuda)
 print("cuda is available for pytorch: ", torch.cuda.is_available())
 
 # modify last layer for classification, and the model used in notebook should be modified too.
-model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features,
-                                      2)  # for mobilenet_v3 model. must add the block expansion factor 4
+# model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features,
+#                                      2)  # for mobilenet_v3 model. must add the block expansion factor 4
 # model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)  # for mobilenet_v2 model. must add the block expansion factor 4
 # model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features, 2)  # for VGG model. must add the block expansion factor 4
 # model.fc = torch.nn.Linear(512, 2)
-# model.fc = torch.nn.Linear(model.fc.in_features, 2)  # for resnet model must add the block expansion factor 4
+model.fc = torch.nn.Linear(model.fc.in_features, 2)  # for resnet model must add the block expansion factor 4
 
 # ** you may use cpu for training
 device = torch.device('cuda')
@@ -214,7 +213,7 @@ def plot_loss(loss_data, best_loss):
     fig_1.canvas.flush_events()
 
 
-NUM_EPOCHS = 5
+NUM_EPOCHS = 100
 best_loss = 1e9
 
 loss_data = []

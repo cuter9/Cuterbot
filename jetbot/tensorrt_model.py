@@ -58,7 +58,14 @@ class TRTModel(object):
         with open(engine_path, 'rb') as f:
             self.engine = self.runtime.deserialize_cuda_engine(f.read())
         self.context = self.engine.create_execution_context()
+        # self.stream = torch.cuda.Stream()
+        # self.stream = torch.cuda.default_stream()
         
+        if self.engine.has_implicit_batch_dimension:
+            print("engine is built from uff model")
+        else:
+            print("engine is built from onnx model")
+
         if input_names is None:
             self.input_names = self._trt_input_names()
         else:
@@ -94,6 +101,7 @@ class TRTModel(object):
             if self.final_shapes is not None:
                 shape = (batch_size, ) + self.final_shapes[i]
             else:
+                # print("output binding shape : ",  idx, self.engine.get_binding_shape(idx))
                 shape = (batch_size, ) + tuple(self.engine.get_binding_shape(idx))
             device = torch_device_from_trt(self.engine.get_location(idx))
             output = torch.empty(size=shape, dtype=dtype, device=device)
@@ -102,7 +110,7 @@ class TRTModel(object):
     
     def execute(self, *inputs):
         batch_size = inputs[0].shape[0]
-        
+
         bindings = [None] * (len(self.input_names) + len(self.output_names))
         
         # map input bindings
@@ -124,16 +132,19 @@ class TRTModel(object):
             idx = self.engine.get_binding_index(name)
             bindings[idx] = int(output_buffers[i].data_ptr())
         
-        self.context.execute(batch_size, bindings)
-        
+        # self.context.execute(batch_size, bindings)
+        # self.context.execute_async(batch_size, bindings, stream_handle = self.stream.cuda_stream)
+        self.context.execute_v2(bindings)
+        # self.stream.synchronize()
+
         if self.engine.has_implicit_batch_dimension:
-            print("engine is built from uff model")
             outputs = [buffer.cpu().numpy() for buffer in output_buffers]
         else:
-            print("engine is built from onnx model")
             outputs = [np.squeeze(buffer.cpu().numpy(), axis=0) for buffer in output_buffers]
         # outputs = [buffer.cpu().numpy() for buffer in output_buffers]
-                                 
+        
+        # self.stream.synchronize()
+        
         return outputs
     
     def __call__(self, *inputs):

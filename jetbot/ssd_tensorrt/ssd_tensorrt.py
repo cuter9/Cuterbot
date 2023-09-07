@@ -17,7 +17,7 @@ Y1_IDX = 6
 
 def parse_boxes(outputs):
     bboxes = outputs[0]
-            
+    # print("shape of output:",  np.shape(bboxes))
     # iterate through each image index
     all_detections = []
     for i in range(bboxes.shape[0]):
@@ -49,10 +49,10 @@ def parse_boxes(outputs):
     return all_detections
 
 
-def load_plugins():
-    library_path = os.path.join(
-        os.path.dirname(__file__), 'libssd_tensorrt.so')
-    ctypes.CDLL(library_path)
+# def load_plugins():
+    # library_path = os.path.join(os.path.dirname(__file__), 'libyolo_layer.so')
+    # library_path = os.path.join(os.path.dirname(__file__), 'libssd_tensorrt.so')
+    # ctypes.CDLL(library_path)
 
 
 def _get_feature_map_shape(config):

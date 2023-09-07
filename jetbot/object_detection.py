@@ -1,5 +1,6 @@
+from xml.sax.xmlreader import InputSource
 import tensorrt as trt
-from jetbot.ssd_tensorrt import load_plugins, parse_boxes, TRT_INPUT_NAME, TRT_OUTPUT_NAME
+from jetbot.ssd_tensorrt import parse_boxes, TRT_INPUT_NAME, TRT_OUTPUT_NAME
 from .tensorrt_model import TRTModel
 import numpy as np
 import cv2
@@ -32,7 +33,9 @@ class ObjectDetector(object):
         
     def execute(self, *inputs):
         trt_outputs = self.trt_model(self.preprocess_fn(*inputs))
+        # trt_outputs = self.trt_model(inputs)
         return parse_boxes(trt_outputs)
+        # return trt_outputs
     
     def __call__(self, *inputs):
         return self.execute(*inputs)
