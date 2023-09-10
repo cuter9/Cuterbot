@@ -24,13 +24,15 @@ import time
 
 matplotlib.use("TkAgg")
 
+WORK = os.getcwd()
+
 DIR_DATA_REPO_PROJECT = "D:\\AI_Lecture_Demos\\Data_Repo\\Cuterbot\\"
 os.makedirs(DIR_DATA_REPO_PROJECT, exist_ok=True)
 
 DIR_DATA_REPO_THIS = os.path.join(DIR_DATA_REPO_PROJECT, "road_following")
 os.makedirs(DIR_DATA_REPO_THIS, exist_ok=True)
 
-TRAIN_MODEL = "mobilenet_v3_large"  # resnet18, resnet34, resnet50, resnet101, mobilenet_v2, vgg11, mobilenet_v3_large
+TRAIN_MODEL = "resnet18"  # resnet18, resnet34, resnet50, resnet101, mobilenet_v2, vgg11, mobilenet_v3_large
 # *** refererence : https://pytorch.org/docs/stable/optim.html#algorithms
 # use the following learning algorithms for evaluation
 TRAIN_MATHOD = "Adam"  # "Adam", "SGD", "ASGD", "Adadelta", "RAdam"; the parameters lr=0.01, momentum=0.92  may be needed
@@ -44,9 +46,8 @@ TRAIN_MATHOD = "Adam"  # "Adam", "SGD", "ASGD", "Adadelta", "RAdam"; the paramet
 # 
 # You should then extract this dataset by calling the command below:
 
-
-# get_ipython().system('unzip -q road_following.zip')
-ZipFile(os.path.join(DIR_DATA_REPO_THIS, 'dataset_xy.zip')).extractall(path=DIR_DATA_REPO_THIS)
+DATA_FILE = "dataset_xy_0907"
+ZipFile(os.path.join(DIR_DATA_REPO_THIS, DATA_FILE+'.zip')).extractall(path=DIR_DATA_REPO_THIS)
 
 
 # You should see a folder named ``dataset_all`` appear in the file browser.
@@ -165,7 +166,7 @@ BEST_MODEL_PATH = os.path.join(DIR_DATA_REPO_THIS, "best_steering_model_xy_" + T
 
 
 # ResNet model has fully connected (fc) final layer with 512 as ``in_features`` and we will be training for regression
-# thus ``out_features`` as 1
+# thus ``out_features`` as 2
 # 
 # Finally, we transfer our model for execution on the GPU
 
@@ -173,22 +174,24 @@ print("torch cuda version : ", torch.version.cuda)
 print("cuda is available for pytorch: ", torch.cuda.is_available())
 
 # modify last layer for classification, and the model used in notebook should be modified too.
-model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features, 2, bias=True)  # for mobilenet_v3 model. must add the block expansion factor 4
+# model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features,
+#                                      2)  # for mobilenet_v3 model. must add the block expansion factor 4
 # model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)  # for mobilenet_v2 model. must add the block expansion factor 4
-# model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features, 2)  # for VGG model. must add the block
-# expansion factor 4 model.fc = torch.nn.Linear(512, 2) model.fc = torch.nn.Linear(model.fc.in_features, 2)  # for resnet model must add the block expansion factor 4
+# model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features, 2)  # for VGG model. must add the block expansion factor 4
+# model.fc = torch.nn.Linear(512, 2)
+model.fc = torch.nn.Linear(model.fc.in_features, 2)  # for resnet model must add the block expansion factor 4
 
 # ** you may use cpu for training
 device = torch.device('cuda')
-# device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
 # device = torch.device('cpu')
 model = model.to(device)
 
+# -------------------------------------
 # ### Train Regression:
 # 
 # We train for 70 epochs and save best model if the loss is reduced.
 
-fig, ax = plt.subplots(figsize=(8, 4))
+fig_1, ax_1 = plt.subplots(figsize=(8, 4))
 font = {'weight': 'normal', 'size': 10}
 
 
@@ -197,29 +200,31 @@ def plot_loss(loss_data, best_loss):
     epochs = range(1, len(loss_data) + 1)
     ld_0 = [ld[0] for ld in loss_data]
     ld_1 = [ld[1] for ld in loss_data]
-    ax.semilogy(epochs, ld_0, "r-", linewidth=1.0, label="Training Loss:{:.4f}".format(ld_0[-1]))
-    ax.semilogy(epochs, ld_1, 'bs--', linewidth=1.0, label="Test Loss:{:.4f}".format(ld_1[-1]))
+    ax_1.semilogy(epochs, ld_0, "r-", linewidth=1.0, label="Training Loss:{:.4f}".format(ld_0[-1]))
+    ax_1.semilogy(epochs, ld_1, 'bs--', linewidth=1.0, label="Test Loss:{:.4f}".format(ld_1[-1]))
     xlim = epochs[-1] + 2
-    ax.set_xlim(0, xlim)
+    ax_1.set_xlim(0, xlim)
     plt.legend()
     plt.title("Training convergence plot (Model : {:s}, Training Method : {:s}) \n current best test loss : {:.4f}". \
               format(TRAIN_MODEL, TRAIN_MATHOD, best_loss))
     plt.xlabel('epoch', fontdict=font)
     plt.ylabel('loss', fontdict=font)
-    fig.canvas.draw()
-    fig.canvas.flush_events()
+    fig_1.canvas.draw()
+    fig_1.canvas.flush_events()
 
 
-NUM_EPOCHS = 200
+NUM_EPOCHS = 100
 best_loss = 1e9
 
 loss_data = []
-lt = []  # learning time
+lt_epoch = []  # learning time per epoch
+lt_sample = []  # learning time per epoch
 for epoch in range(NUM_EPOCHS):
-    start = time.process_time()
+    start_epoch = time.process_time()
     model.train()
     train_loss = 0.0
     for images, labels in iter(train_loader):
+        start_sample = time.process_time()
         images = images.to(device)
         labels = labels.to(device)
         optimizer.zero_grad()
@@ -228,6 +233,8 @@ for epoch in range(NUM_EPOCHS):
         train_loss += float(loss)
         loss.backward()
         optimizer.step()
+        end_sample = time.process_time()
+        lt_sample.append(end_sample - start_sample)
     train_loss /= len(train_loader)
 
     model.eval()
@@ -240,8 +247,8 @@ for epoch in range(NUM_EPOCHS):
         test_loss += float(loss)
     test_loss /= len(test_loader)
 
-    end = time.process_time()
-    lt.append(end - start)
+    end_epoch = time.process_time()
+    lt_epoch.append(end_epoch - start_epoch)
 
     if test_loss < best_loss:
         torch.save(model.state_dict(), BEST_MODEL_PATH)
@@ -252,19 +259,44 @@ for epoch in range(NUM_EPOCHS):
     print('Training performance at %ith epoch --- training lose: %f, test loss: %f'
           % (epoch + 1, train_loss, test_loss))
 
-learning_time = np.array(lt)
-mean_lt = np.mean(learning_time)
-max_lt = np.amax(learning_time)
-min_lt = np.amax(learning_time)
-print("mean learning time: {:.3f} s, maximum learning time: {:.3f} s, minimum learning time: {:.3f} s".format(mean_lt,
-                                                                                                              max_lt,
-                                                                                                              min_lt))
+profile_plot = os.path.join(DIR_DATA_REPO_THIS, "Training_convergence_plot_Model_{:s}_Training_Method_{:s})".
+                            format(TRAIN_MODEL, TRAIN_MATHOD))
+fig_1.savefig(profile_plot)
 
-file_plot = os.path.join(DIR_DATA_REPO_THIS, "Training_convergence_plot_Model_{:s}_Training_Method_{:s})".
-                         format(TRAIN_MODEL, TRAIN_MATHOD))
-plt.savefig(file_plot)
+#---------------------------------------------
+# training time statistics in terms of epoch
+learning_time_epoch = np.array(lt_epoch)
+mean_lt_epoch = np.mean(learning_time_epoch)
+max_lt_epoch = np.amax(learning_time_epoch)
+min_lt_epoch = np.amax(learning_time_epoch)
+print(
+    "mean learning time per epoch: {:.3f} s, maximum epoch learning time: {:.3f} s, minimum epoch learning time: {:.3f} s".
+    format(mean_lt_epoch, max_lt_epoch, min_lt_epoch))
+
+# -------------------------------------------
+# training time statistics in terms of sample
+learning_time_sample = np.array(lt_sample)
+mean_lt_sample = np.mean(learning_time_sample)
+max_lt_sample = np.amax(learning_time_sample)
+min_lt_sample = np.amax(learning_time_sample)
+print(
+    "mean learning time per sample: {:.3f} s, maximum sample learning time: {:.3f} s, minimum sample learning time: {:.3f} s".
+    format(mean_lt_sample, max_lt_sample, min_lt_sample))
+
+fig_2, axh = plt.subplots(1, 2, figsize=(10, 4))
+fig_2.suptitle("Training Time Statistics")
+axh[0].set_ylabel('no. of epoch')
+axh[0].set_xlabel('time of a epoch training, sec.')
+axh[0].hist(learning_time_epoch)
+axh[1].set_ylabel('no. of sample')
+axh[1].set_xlabel('time for a sample training, sec.')
+axh[1].hist(learning_time_sample, bins=(0.02 * np.array(list(range(101)))).tolist())
+training_time_file = os.path.join(DIR_DATA_REPO_THIS, "Training_time_Model_{:s}_Training_Method_{:s})".
+                                  format(TRAIN_MODEL, TRAIN_MATHOD))
+fig_2.savefig(training_time_file)
+
 # Once the model is trained, it will generate ``best_steering_model_xy_resnet34.pth`` file which you can use for
-# inferencing in the live demo notebook.
+# inference in the live demo notebook.
 # 
 # If you trained on a different machine other than JetBot, you'll need to upload this to the JetBot to the
 # ``road_following`` example folder.
