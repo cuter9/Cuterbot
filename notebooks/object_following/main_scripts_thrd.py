@@ -53,13 +53,13 @@ class Object_Follower(traitlets.HasTraits):
         self.follower_model = follower_model
         self.avoider_model = avoider_model
 
-        self.obstacle_detector = Avoider(model_params=self.avoider_model)
-        if type_model == "SSD":
+        # self.obstacle_detector = Avoider(model_params=self.avoider_model)
+        if type_model == "SSD" or type_model == "YOLO":
             from jetbot import ObjectDetector
-            self.object_detector = ObjectDetector(self.follower_model)
-        elif type_model == "YOLO":
-            from jetbot.object_detection_yolo import ObjectDetector_YOLO
-            self.object_detector = ObjectDetector_YOLO(self.follower_model)
+            self.object_detector = ObjectDetector(self.follower_model, type_model)
+        # elif type_model == "YOLO":
+        #    from jetbot.object_detection_yolo import ObjectDetector_YOLO
+        #    self.object_detector = ObjectDetector_YOLO(self.follower_model)
         
         self.robot = Robot()
         self.detections = None
@@ -114,17 +114,18 @@ class Object_Follower(traitlets.HasTraits):
     def _start_run(self):
         # self.is_dectecting = True
         while self.is_dectecting:
-            re, self.capturer.value = self.capturer.cap.read()
+            # re, self.capturer.value = self.capturer.cap.read()
             self.execute({'new': self.capturer.value})
         self.is_dectecting = False 
         
     def start_run(self):
         # self._start_run()
-        self.capturer.stop_thread.set()
-        self.capturer.thread.join()
-
+        # self.capturer.stop_thread.set()
+        # self.capturer.thread.join()
+        # threading.stack_size(64*4096 )
         self.start_run_thread = threading.Thread(target=self._start_run)
         self.start_run_thread.start()
+        print("start running!")
 
     def execute(self, change):
         # print("start excution !")
@@ -138,7 +139,7 @@ class Object_Follower(traitlets.HasTraits):
         # prob_blocked = float(F.softmax(collision_output.flatten(), dim=0)[0])
         # blocked_widget.value = prob_blocked
 
-        self.obstacle_detector.detect(self.current_image)
+        # self.obstacle_detector.detect(self.current_image)
         # self.blocked = self.obstacle_detector.prob_blocked
         # turn left if blocked
         if self.blocked > 0.5:

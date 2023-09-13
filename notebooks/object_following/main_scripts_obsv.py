@@ -54,13 +54,13 @@ class Object_Follower(traitlets.HasTraits):
         self.follower_model = follower_model
         self.avoider_model = avoider_model
 
-        self.obstacle_detector = Avoider(model_params=self.avoider_model)
-        if type_model == "SSD":
+        # self.obstacle_detector = Avoider(model_params=self.avoider_model)
+        if type_model == "SSD" or type_model == "YOLO":
             from jetbot import ObjectDetector
-            self.object_detector = ObjectDetector(self.follower_model)
-        elif type_model == "YOLO":
-            from jetbot.object_detection_yolo import ObjectDetector_YOLO
-            self.object_detector = ObjectDetector_YOLO(self.follower_model)
+            self.object_detector = ObjectDetector(self.follower_model, type_model)
+        # elif type_model == "YOLO":
+        #    from jetbot.object_detection_yolo import ObjectDetector_YOLO
+        #    self.object_detector = ObjectDetector_YOLO(self.follower_model)
         
         self.robot = Robot()
         self.detections = None
@@ -123,7 +123,7 @@ class Object_Follower(traitlets.HasTraits):
 
         # print(image)
         # ** execute collision model to determine if blocked
-        self.obstacle_detector.detect(self.current_image)
+        # self.obstacle_detector.detect(self.current_image)
         # self.blocked = self.obstacle_detector.prob_blocked
         # turn left if blocked
         if self.blocked > 0.5:

@@ -34,7 +34,7 @@ from jetbot import Camera
 from jetbot import Robot
 from jetbot import bgr8_to_jpeg
 import time
-import threading
+# import threading
     # 
     # model = ObjectDetector('ssd_mobilenet_v2_coco_onnx.engine')
     # model = ObjectDetector_YOLO('yolov4-288.engine')
@@ -53,7 +53,7 @@ class Object_Follower(traitlets.HasTraits):
         self.follower_model = follower_model
         self.avoider_model = avoider_model
 
-        self.obstacle_detector = Avoider(model_params=self.avoider_model)
+        # self.obstacle_detector = Avoider(model_params=self.avoider_model)
         if type_model == "SSD":
             from jetbot import ObjectDetector
             self.object_detector = ObjectDetector(self.follower_model)
@@ -139,9 +139,9 @@ class Object_Follower(traitlets.HasTraits):
         # prob_blocked = float(F.softmax(collision_output.flatten(), dim=0)[0])
         # blocked_widget.value = prob_blocked
 
-        self.obstacle_detector.detect(self.current_image)
-        self.blocked = self.obstacle_detector.prob_blocked
-        print(self.blocked)
+        # self.obstacle_detector.detect(self.current_image)
+        # self.blocked = self.obstacle_detector.prob_blocked
+        # print(self.blocked)
         # turn left if blocked
         if self.blocked > 0.5:
         #      # robot.left(0.3)

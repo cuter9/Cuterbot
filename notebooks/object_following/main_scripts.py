@@ -27,6 +27,7 @@ import torch.nn.functional as F
 import cv2
 import numpy as np
 import traitlets
+import os
 
 # from jetbot import ObjectDetector
 # from jetbot.object_detection_yolo import ObjectDetector_YOLO
@@ -53,13 +54,13 @@ class Object_Follower(traitlets.HasTraits):
         self.follower_model = follower_model
         self.avoider_model = avoider_model
 
-        self.obstacle_detector = Avoider(model_params=self.avoider_model)
-        if type_model == "SSD":
+        # self.obstacle_detector = Avoider(model_params=self.avoider_model)
+        if type_model == "SSD" or type_model == "YOLO":
             from jetbot import ObjectDetector
-            self.object_detector = ObjectDetector(self.follower_model)
-        elif type_model == "YOLO":
-            from jetbot.object_detection_yolo import ObjectDetector_YOLO
-            self.object_detector = ObjectDetector_YOLO(self.follower_model)
+            self.object_detector = ObjectDetector(self.follower_model, type_model)
+        # elif type_model == "YOLO":
+        #    from jetbot.object_detection_yolo import ObjectDetector_YOLO
+        #    self.object_detector = ObjectDetector_YOLO(self.follower_model)
         
         self.robot = Robot()
         self.detections = None
@@ -67,11 +68,11 @@ class Object_Follower(traitlets.HasTraits):
         self.object_center = None
         self.closest_objec = None
         self.is_dectecting = True
-        self.blocked = 0
         self.img_width = 300
         self.img_height = 300
         self.cap_image = np.empty((self.img_width, self.img_height, 3), dtype=np.uint8).tobytes()
         
+        # Camera instance would be better to put after all models instantiation
         self.capturer = Camera()
     
         # self.execute({'new': self.capturer.value})
@@ -86,7 +87,6 @@ class Object_Follower(traitlets.HasTraits):
         
     def object_center_detection(self, det):
         """Computes the center x, y coordinates of the object"""
-        # self.object_center = None
         # print(self.matching_detections)
         bbox = det['bbox']
         center_x = (bbox[0] + bbox[2]) / 2.0 - 0.5
@@ -103,30 +103,18 @@ class Object_Follower(traitlets.HasTraits):
         closest_detection = None
         if len(self.matching_detections) != 0:
             for det in self.matching_detections:
-                # center = self.object_center_detection(det)
                 if closest_detection is None:
                     closest_detection = det
                 elif self.norm(self.object_center_detection(det)) < self.norm(self.object_center_detection(closest_detection)):
                     closest_detection = det
         
         self.closest_object =  closest_detection
-        # self.closest_object_center = self.object_center_detection(closest_detection)
         
     def start_run(self):
-        # self.cap_image =  bgr8_to_jpeg(self.capturer.value)
-        # self.execute({'new': self.capturer.value})
-        try:
-            while True:
-                self.execute({'new': self.capturer.value})
-                
-        except KeyboardInterrupt:
-            self.is_dectecting = False
-            self.robot.stop()
-            self.capturer.stop()
-            print("stop running!")
-            pass
-            
-         
+        self.capturer.unobserve_all()
+        print("start running")
+        self.capturer.observe(self.execute, names='value')
+ 
     def execute(self, change):
         # print("start excution !")
         self.current_image = change['new']
@@ -135,10 +123,8 @@ class Object_Follower(traitlets.HasTraits):
 
         # print(image)
         # ** execute collision model to determine if blocked
-
-        self.obstacle_detector.detect(self.current_image)
+        # self.obstacle_detector.detect(self.current_image)
         # self.blocked = self.obstacle_detector.prob_blocked
-        # print(self.blocked)
         # turn left if blocked
         if self.blocked > 0.5:
         #      # robot.left(0.3)
@@ -191,13 +177,9 @@ class Object_Follower(traitlets.HasTraits):
     def stop_run(self):
         # with out:
         print("start stopping!")
-        self.is_dectecting = False
-        # self.capturer.unobserve_all()
-        # time.sleep(1.0)
+        self.capturer.unobserve_all()
         self.robot.stop()
         self.capturer.stop()
-        # clear_output(wait=True)
-        # get_ipython().run_line_magic('reset', '-f')
 
 
 class Avoider(object):
