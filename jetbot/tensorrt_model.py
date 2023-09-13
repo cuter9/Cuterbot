@@ -3,6 +3,126 @@ import torch
 import tensorrt as trt
 import atexit
 
+def nms_boxes_yolo(detections, nms_threshold):
+    """Apply the Non-Maximum Suppression (NMS) algorithm on the bounding
+    boxes with their confidence scores and return an array with the
+    indexes of the bounding boxes we want to keep.
+
+    # Args
+        detections: Nx7 numpy arrays of
+                    [[x, y, w, h, box_confidence, class_id, class_prob],
+                     ......]
+    """
+    x_coord = detections[:, 0]
+    y_coord = detections[:, 1]
+    width = detections[:, 2]
+    height = detections[:, 3]
+    box_confidences = detections[:, 4] * detections[:, 6]
+
+    areas = width * height
+    ordered = box_confidences.argsort()[::-1]
+
+    keep = list()
+    while ordered.size > 0:
+        # Index of the current element:
+        i = ordered[0]
+        keep.append(i)
+        xx1 = np.maximum(x_coord[i], x_coord[ordered[1:]])
+        yy1 = np.maximum(y_coord[i], y_coord[ordered[1:]])
+        xx2 = np.minimum(x_coord[i] + width[i], x_coord[ordered[1:]] + width[ordered[1:]])
+        yy2 = np.minimum(y_coord[i] + height[i], y_coord[ordered[1:]] + height[ordered[1:]])
+
+        # width1 = np.maximum(0.0, xx2 - xx1 + 1)
+        # height1 = np.maximum(0.0, yy2 - yy1 + 1)
+        width1 = np.maximum(0.0, xx2 - xx1)
+        height1 = np.maximum(0.0, yy2 - yy1)
+        intersection = width1 * height1
+        union = (areas[i] + areas[ordered[1:]] - intersection)
+        iou = intersection / union
+        indexes = np.where(iou <= nms_threshold)[0]
+        ordered = ordered[indexes + 1]
+
+    keep = np.array(keep)
+    return keep
+
+# def parse_boxes_yolo(trt_outputs, conf_th=0.3, nms_threshold=0.5, 
+#                      input_shape, letter_box=False):
+def parse_boxes_yolo(trt_outputs, conf_th=0.3, nms_threshold=0.5):
+    """Postprocess TensorRT outputs.
+
+    # Args
+        trt_outputs: a list of 2 or 3 tensors, where each tensor
+                    contains a multiple of 7 float32 numbers in
+                    the order of [x, y, w, h, box_confidence, class_id, class_prob]
+        conf_th: confidence threshold
+        letter_box: boolean, referring to _preprocess_yolo()
+
+    # Returns
+        boxes, scores, classes (after NMS)
+    """
+    # filter low-conf detections and concatenate results of all yolo layers
+    detections = []
+    for o in trt_outputs:
+        dets = o.reshape((-1, 7))
+        # print(np.shape(dets))
+        dets = dets[dets[:, 4] * dets[:, 6] >= conf_th]
+        detections.append(dets)
+    detections = np.concatenate(detections, axis=0)
+
+    if len(detections) == 0:
+        boxes = np.zeros((0, 4), dtype=np.int)
+        scores = np.zeros((0,), dtype=np.float32)
+        classes = np.zeros((0,), dtype=np.float32)
+    else:
+        box_scores = detections[:, 4] * detections[:, 6]
+
+        # scale x, y, w, h from [0, 1] to pixel values
+        # old_h, old_w = img_h, img_w
+        # offset_h, offset_w = 0, 0
+        # if letter_box:
+        #    if (img_w / input_shape[1]) >= (img_h / input_shape[0]):
+        #        old_h = int(input_shape[0] * img_w / input_shape[1])
+        #        offset_h = (old_h - img_h) // 2
+        #    else:
+        #        old_w = int(input_shape[1] * img_h / input_shape[0])
+        #        offset_w = (old_w - img_w) // 2
+        
+        # detections[:, 0:4] *= np.array(
+        #    [old_w, old_h, old_w, old_h], dtype=np.float32)
+
+        # NMS
+        nms_detections = np.zeros((0, 7), dtype=detections.dtype)
+        for class_id in set(detections[:, 5]):
+            idxs = np.where(detections[:, 5] == class_id)
+            cls_detections = detections[idxs]
+            keep = nms_boxes_yolo(cls_detections, nms_threshold)
+            nms_detections = np.concatenate(
+                [nms_detections, cls_detections[keep]], axis=0)
+
+        xx = nms_detections[:, 0].reshape(-1, 1)
+        yy = nms_detections[:, 1].reshape(-1, 1)
+        # if letter_box:
+        #    xx = xx - offset_w
+        #    yy = yy - offset_h
+        ww = nms_detections[:, 2].reshape(-1, 1)
+        hh = nms_detections[:, 3].reshape(-1, 1)
+        # boxes = np.concatenate([xx, yy, xx+ww, yy+hh], axis=1) + 0.5
+        boxes = np.concatenate([xx, yy, (xx+ww), (yy+hh)], axis=1)
+        # boxes = boxes.astype(np.int)
+        scores = nms_detections[:, 4] * nms_detections[:, 6]
+        classes = nms_detections[:, 5]
+        
+    all_detections = []
+    detections = []
+    for b, s, c in zip(boxes.tolist(), scores.tolist(), classes.tolist()):
+        det_dict = dict(label = int(c), confidence = float(s), 
+                        bbox = [b[0], b[1], b[2], b[3]])
+        # det_dict = dict(label = c, confidence = s, bbox = b)
+        detections.append(det_dict)
+    all_detections.append(detections)
+    print(detections)
+    return all_detections
+    # return boxes, scores, classes
 
 def torch_dtype_to_trt(dtype):
     if dtype == torch.int8:
@@ -60,12 +180,14 @@ class TRTModel(object):
         self.context = self.engine.create_execution_context()
         # self.stream = torch.cuda.Stream()
         # self.stream = torch.cuda.default_stream()
-        
+
         if self.engine.has_implicit_batch_dimension:
             print("engine is built from uff model")
+            self.input_shape = tuple(self.engine.get_binding_shape(self.engine[0])[1:])
         else:
             print("engine is built from onnx model")
-
+            self.input_shape = tuple(self.engine.get_binding_shape(self.engine[0])[2:])
+        
         if input_names is None:
             self.input_names = self._trt_input_names()
         else:
@@ -102,7 +224,10 @@ class TRTModel(object):
                 shape = (batch_size, ) + self.final_shapes[i]
             else:
                 # print("output binding shape : ",  idx, self.engine.get_binding_shape(idx))
-                shape = (batch_size, ) + tuple(self.engine.get_binding_shape(idx))
+                if self.engine.has_implicit_batch_dimension:
+                    shape = (batch_size, ) + tuple(self.engine.get_binding_shape(idx))
+                else:
+                    shape = tuple(self.engine.get_binding_shape(idx))
             device = torch_device_from_trt(self.engine.get_location(idx))
             output = torch.empty(size=shape, dtype=dtype, device=device)
             outputs[i] = output
@@ -137,10 +262,10 @@ class TRTModel(object):
         self.context.execute_v2(bindings)
         # self.stream.synchronize()
 
-        if self.engine.has_implicit_batch_dimension:
-            outputs = [buffer.cpu().numpy() for buffer in output_buffers]
-        else:
-            outputs = [np.squeeze(buffer.cpu().numpy(), axis=0) for buffer in output_buffers]
+        # if self.engine.has_implicit_batch_dimension:
+        outputs = [buffer.cpu().numpy() for buffer in output_buffers]
+        # else:
+        #    outputs = [np.squeeze(buffer.cpu().numpy(), axis=0) for buffer in output_buffers]
         # outputs = [buffer.cpu().numpy() for buffer in output_buffers]
         
         # self.stream.synchronize()
