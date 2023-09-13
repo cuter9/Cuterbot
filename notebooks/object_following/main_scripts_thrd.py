@@ -122,7 +122,6 @@ class Object_Follower(traitlets.HasTraits):
         # self._start_run()
         # self.capturer.stop_thread.set()
         # self.capturer.thread.join()
-        # threading.stack_size(64*4096 )
         self.start_run_thread = threading.Thread(target=self._start_run)
         self.start_run_thread.start()
         print("start running!")
