@@ -46,7 +46,7 @@ TRAIN_MATHOD = "Adam"  # "Adam", "SGD", "ASGD", "Adadelta", "RAdam"; the paramet
 # 
 # You should then extract this dataset by calling the command below:
 
-DATA_FILE = "dataset_xy_0907"
+DATA_FILE = "dataset_xy_0908"
 ZipFile(os.path.join(DIR_DATA_REPO_THIS, DATA_FILE+'.zip')).extractall(path=DIR_DATA_REPO_THIS)
 
 
@@ -71,6 +71,7 @@ def get_x(path, width):
 def get_y(path, height):
     """Gets the y value from the image filename"""
     return (float(int(path.split("_")[2])) - height / 2) / (height / 2)
+    # return height - float(int(path.split("_")[2]))
 
 
 class XYDataset(torch.utils.data.Dataset):

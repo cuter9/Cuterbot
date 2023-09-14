@@ -2,8 +2,8 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="21dec94d-5428-424b-ade3-c4c61d56e3dd" name="Cuterbot in place">
-        <fileTransfer accessType="LOCAL" port="0">
+      <webServer id="860951dd-1a13-4fad-9969-83feb9d1ef03" name="Cuterbot">
+        <fileTransfer accessType="SFTP" host="192.168.1.104" port="22" sshConfigId="4de681f5-0b5c-446c-a743-2fd41b5a83db" sshConfig="cuterbot@192.168.1.104:22 password">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
