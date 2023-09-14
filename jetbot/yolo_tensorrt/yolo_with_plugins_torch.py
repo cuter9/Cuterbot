@@ -311,7 +311,6 @@ class TrtYOLO_sync(object):
             # convert to appropriate format
             # inputs_torch[i] = torch.from_numpy(inputs[i])
             inputs_host[i] = np.ascontiguousarray(img_resized)
-            print("input host", inputs_host[i])
             inputs_cuda[i] = cuda.mem_alloc(inputs_host[i].nbytes)
             cuda.memcpy_htod(inputs_cuda[i], inputs_host[i])
             # inputs_cuda[i] = inputs_torch[i].to(torch_device_from_trt(self.engine.get_location(idx)), memory_format=torch.contiguous_format)
@@ -336,8 +335,7 @@ class TrtYOLO_sync(object):
         
         for i, out in enumerate(outputs_cuda):
             cuda.memcpy_dtoh(outputs_host[i], out)
-            print("output host", outputs_host[i])
-
+        
         boxes, scores, classes = _postprocess_yolo(
             outputs_host, img.shape[1], img.shape[0], conf_th,
             nms_threshold=0.5, input_shape=self.input_shape,

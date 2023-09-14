@@ -3,6 +3,7 @@ import torch
 import tensorrt as trt
 import atexit
 
+
 def nms_boxes_yolo(detections, nms_threshold):
     """Apply the Non-Maximum Suppression (NMS) algorithm on the bounding
     boxes with their confidence scores and return an array with the
@@ -120,9 +121,10 @@ def parse_boxes_yolo(trt_outputs, conf_th=0.3, nms_threshold=0.5):
         # det_dict = dict(label = c, confidence = s, bbox = b)
         detections.append(det_dict)
     all_detections.append(detections)
-    # print(detections)
+    print(detections)
     return all_detections
     # return boxes, scores, classes
+
 
 def torch_dtype_to_trt(dtype):
     if dtype == torch.int8:
@@ -180,6 +182,7 @@ class TRTModel(object):
         self.context = self.engine.create_execution_context()
         # self.stream = torch.cuda.Stream()
         # self.stream = torch.cuda.default_stream()
+        # self.input_shape = get_input_shape(self.engine)
 
         if self.engine.has_implicit_batch_dimension:
             print("engine is built from uff model")
@@ -187,6 +190,8 @@ class TRTModel(object):
         else:
             print("engine is built from onnx model")
             self.input_shape = tuple(self.engine.get_binding_shape(self.engine[0])[2:])
+        
+        print("input binding_shape", tuple(self.engine.get_binding_shape(self.engine[0])), "engine input shape", self.input_shape)
         
         if input_names is None:
             self.input_names = self._trt_input_names()
@@ -224,10 +229,11 @@ class TRTModel(object):
                 shape = (batch_size, ) + self.final_shapes[i]
             else:
                 # print("output binding shape : ",  idx, self.engine.get_binding_shape(idx))
-                if self.engine.has_implicit_batch_dimension:
+                if  self.engine.has_implicit_batch_dimension:
                     shape = (batch_size, ) + tuple(self.engine.get_binding_shape(idx))
                 else:
                     shape = tuple(self.engine.get_binding_shape(idx))
+                print("engine output shape:", tuple(self.engine.get_binding_shape(idx)))
             device = torch_device_from_trt(self.engine.get_location(idx))
             output = torch.empty(size=shape, dtype=dtype, device=device)
             outputs[i] = output
@@ -237,7 +243,7 @@ class TRTModel(object):
         batch_size = inputs[0].shape[0]
 
         bindings = [None] * (len(self.input_names) + len(self.output_names))
-        
+      
         # map input bindings
         inputs_torch = [None] * len(self.input_names)
         for i, name in enumerate(self.input_names):
@@ -261,15 +267,19 @@ class TRTModel(object):
         # self.context.execute_async(batch_size, bindings, stream_handle = self.stream.cuda_stream)
         self.context.execute_v2(bindings)
         # self.stream.synchronize()
-
+        
         # if self.engine.has_implicit_batch_dimension:
         outputs = [buffer.cpu().numpy() for buffer in output_buffers]
         # else:
-        #    outputs = [np.squeeze(buffer.cpu().numpy(), axis=0) for buffer in output_buffers]
+        #outputs = [np.squeeze(buffer.cpu().numpy(), axis=0) for buffer in output_buffers]
+        # outputs = [np.squeeze(buffer.cpu().numpy()) for buffer in output_buffers]
         # outputs = [buffer.cpu().numpy() for buffer in output_buffers]
         
         # self.stream.synchronize()
-        
+
+        print("input to cuda:", np.shape(inputs[0]), inputs[0])
+        print("has_implicit_batch_dimension", self.engine.has_implicit_batch_dimension)
+        print("outputs frm cuda:", np.shape(outputs), outputs)
         return outputs
     
     def __call__(self, *inputs):

@@ -270,6 +270,7 @@ def do_inference_v2(context, bindings, inputs, outputs, stream):
     Inputs and outputs are expected to be lists of HostDeviceMem objects.
     """
     # Transfer input data to the GPU.
+    print("input host", inputs[0].host)
     [cuda.memcpy_htod_async(inp.device, inp.host, stream) for inp in inputs]
     # [cuda.memcpy_htod(inp.device, inp.host) for inp in inputs]
     # Run inference.
@@ -280,6 +281,7 @@ def do_inference_v2(context, bindings, inputs, outputs, stream):
     # [cuda.memcpy_dtoh(out.host, out.device) for out in outputs]
     # Synchronize the stream
     stream.synchronize()
+    print("output host", outputs[0].host)
     # Return only the host outputs.
     return [out.host for out in outputs]
 
@@ -335,7 +337,7 @@ class TrtYOLO(object):
             # det_dict = dict(label = c, confidence = s, bbox = b)
             detections.append(det_dict)
         all_detections.append(detections)
-        # print([d["label"] for d in all_detections[0]])
+        print(detections)
         return  all_detections
 
     def execute(self, img, conf_th=0.3, letter_box=None):
@@ -343,6 +345,7 @@ class TrtYOLO(object):
         letter_box = self.letter_box if letter_box is None else letter_box
         img_resized = _preprocess_yolo(img, self.input_shape, letter_box)
 
+        print(img, img_resized)
         # Set host input to the image. The do_inference() function
         # will copy the input to the GPU before executing.
         self.inputs[0].host = np.ascontiguousarray(img_resized)
@@ -357,7 +360,7 @@ class TrtYOLO(object):
         if self.cuda_ctx:
             self.cuda_ctx.pop()
         
-        # print(trt_outputs)
+        print(trt_outputs)
         boxes, scores, classes = _postprocess_yolo(
             trt_outputs, img.shape[1], img.shape[0], conf_th,
             nms_threshold=0.5, input_shape=self.input_shape,
@@ -367,7 +370,7 @@ class TrtYOLO(object):
         boxes[:, [0, 2]] = np.clip(boxes[:, [0, 2]], 0, img.shape[1]-1)
         boxes[:, [1, 3]] = np.clip(boxes[:, [1, 3]], 0, img.shape[0]-1)
          # return boxes, scores, classes
-        print(classes)
+        print(classes, scores, boxes)
         return self.form_detection(boxes, scores, classes, img.shape[1],  img.shape[0])
 
         
