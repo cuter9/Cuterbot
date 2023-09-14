@@ -133,7 +133,6 @@ class Object_Follower(traitlets.HasTraits):
         # compute all detected objects
         self.run_follower_detection()
         self.closest_object_detection()
-        # detections = self.object_detector(image)
         # print(self.detections)
         
         # draw all detections on image
