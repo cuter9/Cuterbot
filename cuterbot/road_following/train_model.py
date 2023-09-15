@@ -185,7 +185,8 @@ model.fc = torch.nn.Linear(model.fc.in_features, 2)  # for resnet model must add
 # ** you may use cpu for training
 device = torch.device('cuda')
 # device = torch.device('cpu')
-model = model.to(device)
+model = model.float()
+model = model.to(device, dtype=torch.float)
 
 # -------------------------------------
 # ### Train Regression:
@@ -226,8 +227,8 @@ for epoch in range(NUM_EPOCHS):
     train_loss = 0.0
     for images, labels in iter(train_loader):
         start_sample = time.process_time()
-        images = images.to(device)
-        labels = labels.to(device)
+        images = images.to(device, dtype=torch.float)
+        labels = labels.to(device, dtype=torch.float)
         optimizer.zero_grad()
         outputs = model(images)
         loss = F.mse_loss(outputs, labels)
@@ -241,8 +242,8 @@ for epoch in range(NUM_EPOCHS):
     model.eval()
     test_loss = 0.0
     for images, labels in iter(test_loader):
-        images = images.to(device)
-        labels = labels.to(device)
+        images = images.to(device, dtype=torch.float)
+        labels = labels.to(device, dtype=torch.float)
         outputs = model(images)
         loss = F.mse_loss(outputs, labels)
         test_loss += float(loss)
