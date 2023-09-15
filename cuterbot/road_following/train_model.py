@@ -32,7 +32,7 @@ os.makedirs(DIR_DATA_REPO_PROJECT, exist_ok=True)
 DIR_DATA_REPO_THIS = os.path.join(DIR_DATA_REPO_PROJECT, "road_following")
 os.makedirs(DIR_DATA_REPO_THIS, exist_ok=True)
 
-TRAIN_MODEL = "resnet18"  # resnet18, resnet34, resnet50, resnet101, mobilenet_v2, vgg11, mobilenet_v3_large
+TRAIN_MODEL = "resnet34"  # resnet18, resnet34, resnet50, resnet101, mobilenet_v2, vgg11, mobilenet_v3_large
 # *** refererence : https://pytorch.org/docs/stable/optim.html#algorithms
 # use the following learning algorithms for evaluation
 TRAIN_MATHOD = "Adam"  # "Adam", "SGD", "ASGD", "Adadelta", "RAdam"; the parameters lr=0.01, momentum=0.92  may be needed
@@ -115,7 +115,7 @@ dataset = XYDataset(os.path.join(DIR_DATA_REPO_THIS, 'dataset_xy'), random_hflip
 # train.
 
 
-test_percent = 0.1
+test_percent = 0.15
 num_test = int(test_percent * len(dataset))
 train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len(dataset) - num_test, num_test])
 
@@ -251,7 +251,7 @@ for epoch in range(NUM_EPOCHS):
     end_epoch = time.process_time()
     lt_epoch.append(end_epoch - start_epoch)
 
-    if test_loss < best_loss:
+    if test_loss <= best_loss:
         torch.save(model.state_dict(), BEST_MODEL_PATH)
         best_loss = test_loss
 
