@@ -46,7 +46,7 @@ TRAIN_MATHOD = "Adam"  # "Adam", "SGD", "ASGD", "Adadelta", "RAdam"; the paramet
 # 
 # You should then extract this dataset by calling the command below:
 
-DATA_FILE = "dataset_xy_0915"
+DATA_FILE = "dataset_xy_0915_2"
 ZipFile(os.path.join(DIR_DATA_REPO_THIS, DATA_FILE+'.zip')).extractall(path=DIR_DATA_REPO_THIS)
 
 
@@ -214,7 +214,7 @@ def plot_loss(loss_data, best_loss):
     fig_1.canvas.flush_events()
 
 
-NUM_EPOCHS = 100
+NUM_EPOCHS = 200
 best_loss = 1e9
 
 loss_data = []
@@ -291,7 +291,7 @@ axh[0].set_xlabel('time of a epoch training, sec.')
 axh[0].hist(learning_time_epoch)
 axh[1].set_ylabel('no. of sample')
 axh[1].set_xlabel('time for a sample training, sec.')
-axh[1].hist(learning_time_sample, bins=(0.02 * np.array(list(range(101)))).tolist())
+axh[1].hist(learning_time_sample, bins=(0.01 * np.array(list(range(101)))).tolist())
 training_time_file = os.path.join(DIR_DATA_REPO_THIS, "Training_time_Model_{:s}_Training_Method_{:s})".
                                   format(TRAIN_MODEL, TRAIN_MATHOD))
 fig_2.savefig(training_time_file)
