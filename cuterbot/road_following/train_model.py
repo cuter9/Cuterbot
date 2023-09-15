@@ -46,7 +46,7 @@ TRAIN_MATHOD = "Adam"  # "Adam", "SGD", "ASGD", "Adadelta", "RAdam"; the paramet
 # 
 # You should then extract this dataset by calling the command below:
 
-DATA_FILE = "dataset_xy_0908"
+DATA_FILE = "dataset_xy_0915"
 ZipFile(os.path.join(DIR_DATA_REPO_THIS, DATA_FILE+'.zip')).extractall(path=DIR_DATA_REPO_THIS)
 
 
