@@ -47,6 +47,7 @@ class Object_Follower(traitlets.HasTraits):
     label = traitlets.Integer(default_value=1).tag(config=True)
     speed = traitlets.Float(default_value=0.15).tag(config=True)
     turn_gain = traitlets.Float(default_value=0.3).tag(config=True)
+    steering_bias = traitlets.Float(default_value=0.0).tag(config=True)
     blocked = traitlets.Float(default_value=0).tag(config=True)
     is_dectecting = traitlets.Bool(default_value=True).tag(config=True)
     
@@ -133,6 +134,7 @@ class Object_Follower(traitlets.HasTraits):
         # compute all detected objects
         self.run_follower_detection()
         self.closest_object_detection()
+        # detections = self.object_detector(image)
         # print(self.detections)
         
         # draw all detections on image
@@ -160,8 +162,8 @@ class Object_Follower(traitlets.HasTraits):
             # move robot forward and steer proportional target's x-distance from center
             center =self.object_center_detection(cls_obj)
             self.robot.set_motors(
-                float(self.speed + self.turn_gain * center[0]),
-                float(self.speed - self.turn_gain * center[0])
+                float(self.speed + self.turn_gain * center[0] + self.steering_bias),
+                float(self.speed - self.turn_gain * center[0] + self.steering_bias)
             )
 
         # update image widget

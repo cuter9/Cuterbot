@@ -32,7 +32,7 @@ os.makedirs(DIR_DATA_REPO_PROJECT, exist_ok=True)
 DIR_DATA_REPO_THIS = os.path.join(DIR_DATA_REPO_PROJECT, "road_following")
 os.makedirs(DIR_DATA_REPO_THIS, exist_ok=True)
 
-TRAIN_MODEL = "resnet18"  # resnet18, resnet34, resnet50, resnet101, mobilenet_v2, vgg11, mobilenet_v3_large
+TRAIN_MODEL = "resnet50"  # resnet18, resnet34, resnet50, resnet101, mobilenet_v2, vgg11, mobilenet_v3_large
 # *** refererence : https://pytorch.org/docs/stable/optim.html#algorithms
 # use the following learning algorithms for evaluation
 TRAIN_MATHOD = "Adam"  # "Adam", "SGD", "ASGD", "Adadelta", "RAdam"; the parameters lr=0.01, momentum=0.92  may be needed
@@ -174,7 +174,7 @@ BEST_MODEL_PATH = os.path.join(DIR_DATA_REPO_THIS, "best_steering_model_xy_" + T
 print("torch cuda version : ", torch.version.cuda)
 print("cuda is available for pytorch: ", torch.cuda.is_available())
 
-# modify last layer for classification, and the model used in notebook should be modified too.
+# ----- modify last layer for classification, and the model used in notebook should be modified too.
 # model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features,
 #                                      2)  # for mobilenet_v3 model. must add the block expansion factor 4
 # model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)  # for mobilenet_v2 model. must add the block expansion factor 4
@@ -188,9 +188,7 @@ device = torch.device('cuda')
 model = model.float()
 model = model.to(device, dtype=torch.float)
 
-# -------------------------------------
 # ### Train Regression:
-# 
 # We train for 70 epochs and save best model if the loss is reduced.
 
 fig_1, ax_1 = plt.subplots(figsize=(8, 4))
@@ -265,8 +263,7 @@ profile_plot = os.path.join(DIR_DATA_REPO_THIS, "Training_convergence_plot_Model
                             format(TRAIN_MODEL, TRAIN_MATHOD))
 fig_1.savefig(profile_plot)
 
-#---------------------------------------------
-# training time statistics in terms of epoch
+# ----- training time statistics in terms of epoch
 learning_time_epoch = np.array(lt_epoch)
 mean_lt_epoch = np.mean(learning_time_epoch)
 max_lt_epoch = np.amax(learning_time_epoch)
@@ -275,8 +272,7 @@ print(
     "mean learning time per epoch: {:.3f} s, maximum epoch learning time: {:.3f} s, minimum epoch learning time: {:.3f} s".
     format(mean_lt_epoch, max_lt_epoch, min_lt_epoch))
 
-# -------------------------------------------
-# training time statistics in terms of sample
+# ----- training time statistics in terms of sample
 learning_time_sample = np.array(lt_sample)
 mean_lt_sample = np.mean(learning_time_sample)
 max_lt_sample = np.amax(learning_time_sample)
