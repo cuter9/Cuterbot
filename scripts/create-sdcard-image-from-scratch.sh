@@ -21,7 +21,7 @@ sudo usermod -aG i2c $USER
 # Make swapfile
 cd
 sudo swapoff -a
-sudo fallocate -l 10G /var/swapfile
+sudo fallocate -l 8G /var/swapfile
 sudo chmod 600 /var/swapfile
 sudo mkswap /var/swapfile
 sudo swapon /var/swapfile
@@ -32,8 +32,10 @@ sudo bash -c 'echo "/var/swapfile swap swap defaults 0 0" >> /etc/fstab'
 echo -e "\e[104m Install pip and some python dependencies \e[0m"
 sudo apt update
 # sudo apt install -y python3-pip python3-pil
+sudo apt install -y python3-pip
+sudo python3 -m pip install --upgrade pip
 sudo -H python3 -m pip install pillow
-sudo -H python3 -m pip install Cython
+sudo -H python3 -m pip install Cython==0.29.35      # the later version may not compatible with h5py; https://qengineering.eu/install-tensorflow-2.3.1-on-jetson-nano.html
 sudo -H python3 -m pip install --upgrade numpy
 
 # Install jtop
@@ -51,14 +53,17 @@ sudo -H python3 -m pip install -U testresources setuptools numpy==1.16.1 future=
 # TF-1.15
 sudo -H python3 -m pip install --pre --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v461 'tensorflow<2'
 
-# Install the pre-built PyTorch pip wheel 
+# Install the pre-built PyTorch pip wheel
+# https://github.com/pytorch/vision/blob/main/README.md
 echo -e "\e[45m Install the pre-built PyTorch pip wheel  \e[0m"
 cd
 # wget -N https://nvidia.box.com/shared/static/yr6sjswn25z7oankw8zy1roow9cy5ur1.whl -O torch-1.6.0rc2-cp36-cp36m-linux_aarch64.whl
 wget -N https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -O torch-1.10.0-cp36-cp36m-linux_aarch64.whl
+# wget -N https://developer.download.nvidia.com/compute/redist/jp/v461/pytorch/torch-1.11.0a0+17540c5+nv22.01-cp36-cp36m-linux_aarch64.whl -O torch-1.11.0-cp36-cp36m-linux_aarch64.whl
 sudo apt install -y libopenblas-base libopenmpi-dev 
 # sudo -H python3 -m pip install Cython
-sudo -H python3 -m pip install torch-1.10.0-cp36-cp36m-linux_aarch64.whl 
+sudo -H python3 -m pip install torch-1.10.0-cp36-cp36m-linux_aarch64.whl
+# sudo -H python3 -m pip install torch-1.11.0-cp36-cp36m-linux_aarch64.whl
 
 # Install torchvision package
 echo -e "\e[45m Install torchvision package \e[0m"
@@ -94,6 +99,7 @@ sudo apt install -y curl
 curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -      # use setup_14.x to provide GLIC_28
 sudo apt install -y nodejs libffi-dev
 sudo -H python3 -m pip install jupyter jupyterlab jupyter_packaging
+sudo -H python3 -m pip install ipywidgets -U      # update the latest ipython widgets
 
 # sudo -H python3 -m pip install "jupyter_bokeh<2.4.0"
 sudo -H jupyter labextension install @jupyter-widgets/jupyterlab-manager
