@@ -91,7 +91,7 @@ class OpenCvGstCamera(CameraBase):
         if hasattr(self, 'thread'):
             self.stop_thread.set()
             self.thread.join()
-            print("Capture thread is stopped") 
+            print("Capture thread is stopped")
       
         if hasattr(self, 'cap'):
             self.cap.release()
