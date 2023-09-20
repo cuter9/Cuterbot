@@ -8,6 +8,8 @@ jetbot/jpeg_encoder.py
 jetbot/local_controller.py
 jetbot/motor.py
 jetbot/object_detection.py
+jetbot/object_detection.py
+jetbot/tensorrt_model.py
 jetbot/robot.py
 jetbot/tensorrt_model.py
 jetbot.egg-info/PKG-INFO
@@ -24,6 +26,8 @@ jetbot/camera/opencv_gst_camera.py
 jetbot/camera/zmq_camera.py
 jetbot/ssd_tensorrt/__init__.py
 jetbot/ssd_tensorrt/ssd_tensorrt.py
+jetbot/yolo_tensorrt/__init__.py
+jetbot/yolo_tensorrt/yolo_with_plugins.py
 jetbot/utils/__init__.py
 jetbot/utils/create_jupyter_service.py
 jetbot/utils/create_stats_service.py
