@@ -143,13 +143,13 @@ echo -e "\e[42m Install jetbot python module \e[0m"
 cd
 sudo apt install -y python3-smbus
 sudo -H python3 -m pip install pyserial
-cd ~/jetbot
+cd ~/Cuterbot
 sudo apt install -y cmake
 sudo python3 setup.py install
 
 # Install jetbot services
 echo -e "\e[42m Install jetbot services \e[0m"
-cd jetbot/utils
+cd Cuterbot/utils
 python3 create_stats_service.py
 sudo mv jetbot_stats.service /etc/systemd/system/jetbot_stats.service
 sudo systemctl enable jetbot_stats
@@ -180,7 +180,7 @@ sudo systemctl disable nvzramconfig.service
 
 # Copy JetBot notebooks to home directory
 sudo rm -rf ~/Notebooks
-cp -r ~/jetbot/notebooks ~/Notebooks
+cp -r ~/Cuterbot/notebooks ~/Notebooks
 
 echo -e "\e[42m All done! \e[0m"
 
