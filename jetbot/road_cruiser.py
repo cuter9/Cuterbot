@@ -1,15 +1,18 @@
+import time
+
+import PIL.Image
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
 import torchvision
-import traitlets
 import torchvision.transforms as transforms
-import PIL.Image
-from IPython.display import display
-import ipywidgets
-from jetbot import Camera, bgr8_to_jpeg
-from jetbot import Robot
-import time
-import numpy as np, matplotlib.pyplot as plt
+import traitlets
 
+from jetbot import Camera
+from jetbot import Robot
+
+matplotlib.use('nbAgg')
 
 class RoadCruiser(traitlets.HasTraits):
     speed_gain = traitlets.Float(default_value=0.15).tag(config=True)
