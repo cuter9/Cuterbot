@@ -1,7 +1,7 @@
 ARG BASE_IMAGE=jetbot-models:jp44
 FROM ${BASE_IMAGE}
 
-ARG JUPYTER_PASSWORD=jetbot
+ARG JUPYTER_PASSWORD=cuterbot
 ENV JUPYTER_WORKDIR=/workspace
 WORKDIR /workspace
 

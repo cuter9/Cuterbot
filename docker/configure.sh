@@ -18,16 +18,21 @@ then
 elif [[ "$L4T_VERSION" == "32.5.0" ]] || [[ "$L4T_VERSION" == "32.5.1" ]]
 then
 	JETBOT_BASE_IMAGE=nvcr.io/nvidia/l4t-pytorch:r32.5.0-pth1.6-py3
+elif [[ "$L4T_VERSION" == "32.7.4" ]] || [[ "$L4T_VERSION" == "32.7.1" ]]
+then
+	JETBOT_BASE_IMAGE=nvcr.io/nvidia/l4t-pytorch:r32.7.1-pth1.10-py3
 else
 	echo "JETBOT_BASE_IMAGE not found for ${L4T_VERSION}.  Please manually set the JETBOT_BASE_IMAGE environment variable. (ie: export JETBOT_BASE_IMAGE=...)"
 fi
 
 export JETBOT_BASE_IMAGE
-export JETBOT_DOCKER_REMOTE=jetbot
+export JETBOT_DOCKER_REMOTE=cutertbot
 
 echo "JETBOT_VERSION=$JETBOT_VERSION"
 echo "L4T_VERSION=$L4T_VERSION"
 echo "JETBOT_BASE_IMAGE=$JETBOT_BASE_IMAGE"
+echo "JETBOT_DOCKER_REMOTE=$JETBOT_DOCKER_REMOTE"
+echo "L4T_RELEASE=$L4T_RELEASE"
 
 ./set_nvidia_runtime.sh
 sudo systemctl enable docker

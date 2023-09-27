@@ -1,4 +1,5 @@
-ARG BASE_IMAGE=nvcr.io/nvidia/l4t-pytorch:r32.4.3-pth1.6-py3
+# ARG BASE_IMAGE=nvcr.io/nvidia/l4t-pytorch:r32.4.3-pth1.6-py3
+ARG BASE_IMAGE=nvcr.io/nvidia/l4t-pytorch:r32.7.1-pth1.10-py3
 FROM ${BASE_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -6,7 +7,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 # ====================
 # INSTALL COMMON TOOLS
 # ====================
-RUN apt-get update && apt-get install -y net-tools vim cmake
+RUN apt-get install software-properties-common wget
+RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+
+RUN apt-get update && apt-get install -y net-tools nano cmake
 
 
 # ==================
@@ -28,17 +33,23 @@ RUN apt-get update && \
 		  libjpeg8-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install setuptools Cython wheel
-RUN pip3 install h5py==2.10.0 --verbose
-RUN pip3 install future==0.17.1 mock==3.0.5 keras_preprocessing==1.0.5 keras_applications==1.0.8 gast==0.2.2 futures protobuf pybind11 --verbose
-RUN pip3 install numpy --verbose
+# RUN pip3 install setuptools Cython wheel
+RUN python3 -m pip install pip -U   # upgrade pip for following installation of protobuf
+RUN pip3 install setuptools 'Cython==0.29.35' wheel
+RUN pip3 install 'numpy<1.19.0'
+RUN pip3 install h5py==2.10.0
+# RUN pip3 install future==0.17.1 mock==3.0.5 keras_preprocessing==1.0.5 keras_applications==1.0.8 gast==0.3.3 futures protobuf pybind11
+RUN pip3 install future==0.17.1 mock==3.0.5 keras_preprocessing==1.0.5 keras_applications==1.0.8 gast==0.3.3 futures==2.2.0 protobuf pybind11
+# RUN pip3 install numpy
 
-ARG TENSORFLOW_URL=https://nvidia.box.com/shared/static/rummpy6q1km1wivomalpkwt2jy28mndf.whl 
-ARG TENSORFLOW_WHL=tensorflow-1.15.2+nv-cp36-cp36m-linux_aarch64.whl
+# ARG TENSORFLOW_URL=https://nvidia.box.com/shared/static/rummpy6q1km1wivomalpkwt2jy28mndf.whl 
+# ARG TENSORFLOW_URL= https://developer.download.nvidia.com/compute/redist/jp/v461/tensorflow/tensorflow-1.15.5+nv22.1-cp36-cp36m-linux_aarch64.whl
+# ARG TENSORFLOW_WHL=tensorflow-1.15.2+nv-cp36-cp36m-linux_aarch64.whl
 
-RUN wget --quiet --show-progress --progress=bar:force:noscroll --no-check-certificate ${TENSORFLOW_URL} -O ${TENSORFLOW_WHL} && \
-    pip3 install ${TENSORFLOW_WHL} --verbose && \
-    rm ${TENSORFLOW_WHL}
+RUN python3 -m pip install --pre --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v461 'tensorflow<2'
+# RUN wget --quiet --show-progress ${TENSORFLOW_URL} -O ${TENSORFLOW_WHL} && \
+ #   pip3 install ${TENSORFLOW_WHL} && \
+ #   rm ${TENSORFLOW_WHL}
 
 
 # ==============
@@ -78,10 +89,14 @@ RUN python3 -m pip install git+https://github.com/ipython/traitlets@dead2b8cdde5
 RUN echo -e "\e[48;5;172m Install Jupyter Lab \e[0m"
 RUN apt-get update
 RUN apt-get install -y curl
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
-RUN apt-get install -y nodejs libffi-dev 
-RUN pip3 install jupyter jupyterlab==2.2.6
+# RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
+RUN apt-get install -y nodejs libffi-dev
+# RUN pip3 install jupyter jupyterlab==2.2.6
+RUN pip3 install jupyter jupyterlab jupyter_packaging
 RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager
+RUN pip3 install ipywidgets -U      # update the latest ipython widgets
+
 
 
 # Install jupyter_clickable_image_widget
@@ -115,7 +130,12 @@ RUN cd ${TORCH2TRT_REPO_DIR} && \
 # ==============
 # INSTALL JETBOT
 # ==============
+RUN python3 -m pip install pyserial
+RUN python3 -m pip install matplotlib
 ENV JETBOT_REPO_DIR=/opt/jetbot
 COPY . ${JETBOT_REPO_DIR}
 RUN cd ${JETBOT_REPO_DIR} && python3 setup.py install
+
+# COPY ../notebooks Notebooks/
+
 

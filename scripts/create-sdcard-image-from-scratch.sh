@@ -21,7 +21,7 @@ sudo usermod -aG i2c $USER
 # Make swapfile
 cd
 sudo swapoff -a
-sudo fallocate -l 8G /var/swapfile
+sudo fallocate -l 10G /var/swapfile
 sudo chmod 600 /var/swapfile
 sudo mkswap /var/swapfile
 sudo swapon /var/swapfile
@@ -32,10 +32,8 @@ sudo bash -c 'echo "/var/swapfile swap swap defaults 0 0" >> /etc/fstab'
 echo -e "\e[104m Install pip and some python dependencies \e[0m"
 sudo apt update
 # sudo apt install -y python3-pip python3-pil
-sudo apt install -y python3-pip
-sudo python3 -m pip install --upgrade pip
 sudo -H python3 -m pip install pillow
-sudo -H python3 -m pip install Cython==0.29.35      # the later version may not compatible with h5py; https://qengineering.eu/install-tensorflow-2.3.1-on-jetson-nano.html
+sudo -H python3 -m pip install Cython
 sudo -H python3 -m pip install --upgrade numpy
 
 # Install jtop
@@ -48,22 +46,19 @@ echo -e "\e[48;5;202m Install the pre-built TensorFlow pip wheel \e[0m"
 sudo apt update
 sudo apt install -y libhdf5-serial-dev hdf5-tools libhdf5-dev zlib1g-dev zip libjpeg8-dev liblapack-dev libblas-dev gfortran
 # sudo apt-get install -y python3-pip
-sudo -H python3 -m pip install -U testresources setuptools numpy==1.16.1 future==0.17.1 mock==3.0.5 h5py==2.9.0 keras_preprocessing==1.0.5 keras_applications==1.0.8 gast==0.3.3 futures==3.1.1 "protobuf==4.21.0" pybind11
+sudo -H python3 -m pip install -U testresources setuptools numpy==1.18.5 future==0.17.1 mock==3.0.5 h5py==2.10.0 keras_preprocessing==1.0.5 keras_applications==1.0.8 gast==0.3.3 futures==3.1.1 "protobuf==4.21.0" pybind11
 # sudo -H python3 -m pip install -U pip testresources setuptools numpy==1.16.1 future==0.17.1 mock==3.0.5 h5py==2.9.0 keras_preprocessing==1.0.5 keras_applications==1.0.8 gast==0.2.2 protobuf pybind11
 # TF-1.15
 sudo -H python3 -m pip install --pre --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v461 'tensorflow<2'
 
-# Install the pre-built PyTorch pip wheel
-# https://github.com/pytorch/vision/blob/main/README.md
+# Install the pre-built PyTorch pip wheel 
 echo -e "\e[45m Install the pre-built PyTorch pip wheel  \e[0m"
 cd
 # wget -N https://nvidia.box.com/shared/static/yr6sjswn25z7oankw8zy1roow9cy5ur1.whl -O torch-1.6.0rc2-cp36-cp36m-linux_aarch64.whl
 wget -N https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -O torch-1.10.0-cp36-cp36m-linux_aarch64.whl
-# wget -N https://developer.download.nvidia.com/compute/redist/jp/v461/pytorch/torch-1.11.0a0+17540c5+nv22.01-cp36-cp36m-linux_aarch64.whl -O torch-1.11.0-cp36-cp36m-linux_aarch64.whl
 sudo apt install -y libopenblas-base libopenmpi-dev 
 # sudo -H python3 -m pip install Cython
-sudo -H python3 -m pip install torch-1.10.0-cp36-cp36m-linux_aarch64.whl
-# sudo -H python3 -m pip install torch-1.11.0-cp36-cp36m-linux_aarch64.whl
+sudo -H python3 -m pip install torch-1.10.0-cp36-cp36m-linux_aarch64.whl 
 
 # Install torchvision package
 echo -e "\e[45m Install torchvision package \e[0m"
@@ -99,7 +94,6 @@ sudo apt install -y curl
 curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -      # use setup_14.x to provide GLIC_28
 sudo apt install -y nodejs libffi-dev
 sudo -H python3 -m pip install jupyter jupyterlab jupyter_packaging
-sudo -H python3 -m pip install ipywidgets -U      # update the latest ipython widgets
 
 # sudo -H python3 -m pip install "jupyter_bokeh<2.4.0"
 sudo -H jupyter labextension install @jupyter-widgets/jupyterlab-manager
@@ -149,7 +143,7 @@ sudo python3 setup.py install
 
 # Install jetbot services
 echo -e "\e[42m Install jetbot services \e[0m"
-cd Cuterbot/utils
+cd ~/Cuterbot/jetbot/utils
 python3 create_stats_service.py
 sudo mv jetbot_stats.service /etc/systemd/system/jetbot_stats.service
 sudo systemctl enable jetbot_stats
