@@ -26,8 +26,8 @@ class RoadCruiser(traitlets.HasTraits):
     def __int__(self, cruiser_model, type_model):
         # self.cruiser_model = cruiser_model
         self.type_model = type_model
-        if type_model == "Mobilenet":
-            self.cruiser_model = torchvision.models.mobilenet_v3_large(pretrained=False)
+        if type_model == "mobilenet":
+            self.cruiser_model = cruiser_model
             self.cruiser_model.classifier[3] = torch.nn.Linear(self.cruiser_model.classifier[3].in_features, 2)
             self.cruiser_model.load_state_dict(torch.load('best_steering_model_xy_mobilenet_v3_large.pth'))
             self.speed_gain = 0.2
@@ -35,9 +35,9 @@ class RoadCruiser(traitlets.HasTraits):
             self.steering_dgain = 0.82
             self.steering_bias = -0.01
 
-        elif type_model == "resnet18":
+        elif type_model == "resnet":
             # model = torchvision.models.resnet18(pretrained=False)
-            self.cruiser_model = torchvision.models.resnet34(pretrained=False)
+            self.cruiser_model = cruiser_model
             # model = torchvision.models.resnet50(pretrained=False)
             self.cruiser_model.fc = torch.nn.Linear(self.cruiser_model.fc.in_features, 2)
             # model.load_state_dict(torch.load('best_steering_model_xy_resnet18.pth'))
@@ -171,8 +171,8 @@ class RoadCruiser(traitlets.HasTraits):
         # y = (0.5 - xy[1]) / 2.0
         y = (1 + xy[1])
 
-        self.x_slider.value = x
-        self.y_slider.value = y
+        self.x_slider = x
+        self.y_slider = y
 
         # self.speed_slider.value = speed_gain_slider.value
 
@@ -182,10 +182,10 @@ class RoadCruiser(traitlets.HasTraits):
         pid = self.angle * self.steering_gain + (self.angle - self.angle_last) * self.steering_dgain
         self.angle_last = self.angle
 
-        self.steering.value = pid + self.steering_bias
+        self.steering = pid + self.steering_bias
 
-        self.robot.left_motor.value = max(min(self.speed_gain + self.steering.value, 1.0), 0.0)
-        self.robot.right_motor.value = max(min(self.speed_gain - self.steering.value, 1.0), 0.0)
+        self.robot.left_motor.value = max(min(self.speed_gain + self.steering, 1.0), 0.0)
+        self.robot.right_motor.value = max(min(self.speed_gain - self.steering, 1.0), 0.0)
         end_time = time.process_time()
         self.execution_time.append(end_time - start_time + self.camera.cap_time)
 
