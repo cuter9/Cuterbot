@@ -5,14 +5,15 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import torchvision
+# import torchvision
 import torchvision.transforms as transforms
 import traitlets
+import torchvision.models as models
 
 from jetbot import Camera
 from jetbot import Robot
 
-matplotlib.use('nbAgg')
+# matplotlib.use('nbAgg')
 
 class RoadCruiser(traitlets.HasTraits):
     speed_gain = traitlets.Float(default_value=0.15).tag(config=True)
@@ -23,30 +24,31 @@ class RoadCruiser(traitlets.HasTraits):
     x_slider = traitlets.Float(default_value=0).tag(config=True)
     y_slider = traitlets.Float(default_value=0).tag(config=True)
 
-    def __int__(self, cruiser_model, type_model):
-        # self.cruiser_model = cruiser_model
+    def __init__(self, cruiser_model='resnet18', type_model='resnet', *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.cruiser_model = getattr(models, cruiser_model)(pretrained=False)
         self.type_model = type_model
         if type_model == "mobilenet":
             self.cruiser_model = cruiser_model
             self.cruiser_model.classifier[3] = torch.nn.Linear(self.cruiser_model.classifier[3].in_features, 2)
             self.cruiser_model.load_state_dict(torch.load('best_steering_model_xy_mobilenet_v3_large.pth'))
-            self.speed_gain = 0.2
-            self.steering_gain = 0.08
-            self.steering_dgain = 0.82
-            self.steering_bias = -0.01
+            # self.speed_gain = 0.2
+            # self.steering_gain = 0.08
+            # self.steering_dgain = 0.82
+            # self.steering_bias = -0.01
 
         elif type_model == "resnet":
             # model = torchvision.models.resnet18(pretrained=False)
             self.cruiser_model = cruiser_model
             # model = torchvision.models.resnet50(pretrained=False)
             self.cruiser_model.fc = torch.nn.Linear(self.cruiser_model.fc.in_features, 2)
-            # model.load_state_dict(torch.load('best_steering_model_xy_resnet18.pth'))
-            self.cruiser_model.load_state_dict(torch.load('best_steering_model_xy_resnet34.pth'))
+            self.cruiser_model.load_state_dict(torch.load('best_steering_model_xy_resnet18.pth'))
+            # self.cruiser_model.load_state_dict(torch.load('best_steering_model_xy_resnet34.pth'))
             # model.load_state_dict(torch.load('best_steering_model_xy_resnet50.pth'))
-            self.speed_gain = 0.2
-            self.steering_gain = 0.08
-            self.steering_dgain = 0.82
-            self.steering_bias = -0.01
+            # self.speed_gain = 0.2
+            # self.steering_gain = 0.08
+            # self.steering_dgain = 0.82
+            # self.steering_bias = -0.01
 
         self.camera = Camera()
         self.robot = Robot()
@@ -171,8 +173,8 @@ class RoadCruiser(traitlets.HasTraits):
         # y = (0.5 - xy[1]) / 2.0
         y = (1 + xy[1])
 
-        self.x_slider = x
-        self.y_slider = y
+        self.x_slider = x.item()
+        self.y_slider = y.item()
 
         # self.speed_slider.value = speed_gain_slider.value
 
@@ -189,7 +191,7 @@ class RoadCruiser(traitlets.HasTraits):
         end_time = time.process_time()
         self.execution_time.append(end_time - start_time + self.camera.cap_time)
 
-    def __ceil__(self):
+    def start_cruising(self):
         # self.execute({'new': self.camera.value})
         self.camera.observe(self.execute, names='value')
 

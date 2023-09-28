@@ -51,7 +51,9 @@ class Object_Follower(traitlets.HasTraits):
     blocked = traitlets.Float(default_value=0).tag(config=True)
     is_dectecting = traitlets.Bool(default_value=True).tag(config=True)
     
-    def __init__(self, follower_model='ssd_mobilenet_v2_coco_onnx.engine', avoider_model='../collision_avoidance/best_model.pth', type_model="SSD"):
+    def __init__(self, follower_model='ssd_mobilenet_v2_coco_onnx.engine',
+                 avoider_model='../collision_avoidance/best_model.pth', type_model="SSD", *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.follower_model = follower_model
         self.avoider_model = avoider_model
 
