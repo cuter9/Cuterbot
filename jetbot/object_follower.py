@@ -41,7 +41,7 @@ import threading
     # model = ObjectDetector_YOLO('yolov4-288.engine')
 
 
-class Object_Follower(traitlets.HasTraits): 
+class ObjectFollower(traitlets.HasTraits): 
     
     cap_image = traitlets.Any()
     label = traitlets.Integer(default_value=1).tag(config=True)
@@ -51,16 +51,14 @@ class Object_Follower(traitlets.HasTraits):
     blocked = traitlets.Float(default_value=0).tag(config=True)
     is_dectecting = traitlets.Bool(default_value=True).tag(config=True)
     
-    def __init__(self, follower_model='ssd_mobilenet_v2_coco_onnx.engine',
-                 avoider_model='../collision_avoidance/best_model.pth', type_model="SSD", *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, follower_model='ssd_mobilenet_v2_coco_onnx.engine', avoider_model='../collision_avoidance/best_model.pth', type_follower_model="SSD"):
         self.follower_model = follower_model
         self.avoider_model = avoider_model
 
         # self.obstacle_detector = Avoider(model_params=self.avoider_model)
-        if type_model == "SSD" or type_model == "YOLO":
+        if type_follower_model == "SSD" or type_follower_model == "YOLO":
             from jetbot import ObjectDetector
-            self.object_detector = ObjectDetector(self.follower_model, type_model)
+            self.object_detector = ObjectDetector(self.follower_model, type_follower_model)
         # elif type_model == "YOLO":
         #    from jetbot.object_detection_yolo import ObjectDetector_YOLO
         #    self.object_detector = ObjectDetector_YOLO(self.follower_model)
@@ -69,7 +67,7 @@ class Object_Follower(traitlets.HasTraits):
         self.detections = None
         self.matching_detections = None
         self.object_center = None
-        self.closest_objec = None
+        self.closest_object = None
         self.is_dectecting = True
 
         # Camera instance would be better to put after all models instantiation
