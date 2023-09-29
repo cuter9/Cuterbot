@@ -18,11 +18,12 @@ import PIL.Image
 import os
 import numpy as np
 from zipfile import ZipFile
-import matplotlib.pyplot as plt
-import matplotlib
 import time
 
+import matplotlib
+
 matplotlib.use("TkAgg")
+import matplotlib.pyplot as plt
 
 WORK = os.getcwd()
 
@@ -47,7 +48,7 @@ TRAIN_MATHOD = "Adam"  # "Adam", "SGD", "ASGD", "Adadelta", "RAdam"; the paramet
 # You should then extract this dataset by calling the command below:
 
 DATA_FILE = "dataset_xy_0916_1"
-ZipFile(os.path.join(DIR_DATA_REPO_THIS, DATA_FILE+'.zip')).extractall(path=DIR_DATA_REPO_THIS)
+ZipFile(os.path.join(DIR_DATA_REPO_THIS, DATA_FILE + '.zip')).extractall(path=DIR_DATA_REPO_THIS)
 
 
 # You should see a folder named ``dataset_all`` appear in the file browser.
