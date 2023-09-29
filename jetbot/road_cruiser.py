@@ -25,7 +25,7 @@ class RoadCruiser(traitlets.HasTraits):
     y_slider = traitlets.Float(default_value=0).tag(config=True)
     speed = traitlets.Float(default_value=0).tag(config=True)
 
-    def __init__(self, cruiser_model='resnet18', type_model='resnet'):
+    def __init__(self, cruiser_model = 'resnet18', type_model = 'resnet'):
         super().__init__()
         self.cruiser_model = getattr(torchvision.models, cruiser_model)(pretrained=False)
         self.type_model = type_model
@@ -35,7 +35,7 @@ class RoadCruiser(traitlets.HasTraits):
 
         elif type_model == "resnet":
             self.cruiser_model.fc = torch.nn.Linear(self.cruiser_model.fc.in_features, 2)
-            self.cruiser_model.load_state_dict(torch.load('best_steering_model_xy_' + cruiser_model + '.pth'))
+            self.cruiser_model.load_state_dict(torch.load('best_steering_model_xy_'+ cruiser_model + '.pth'))
             # self.cruiser_model.load_state_dict(torch.load('best_steering_model_xy_resnet34.pth'))
             # model.load_state_dict(torch.load('best_steering_model_xy_resnet50.pth'))
 
@@ -83,6 +83,7 @@ class RoadCruiser(traitlets.HasTraits):
         image.sub_(mean[:, None, None]).div_(std[:, None, None])
         return image[None, ...]
 
+
     def execute(self, change):
         start_time = time.process_time()
         # global angle, angle_last
@@ -114,6 +115,7 @@ class RoadCruiser(traitlets.HasTraits):
     def start_cruising(self):
         # self.execute({'new': self.camera.value})
         self.camera.observe(self.execute, names='value')
+
 
     def stop_cruising(self, b):
         self.camera.unobserve(self.execute, names='value')
