@@ -1,8 +1,9 @@
+import os
 import time
 
 import PIL.Image
 import matplotlib
-# matplotlib.use("TkAgg")
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -118,7 +119,12 @@ class RoadCruiser(traitlets.HasTraits):
 
 
     def stop_cruising(self, b):
+        os.environ['DISPLAY'] = ':10.0'
         self.camera.unobserve(self.execute, names='value')
+        time.sleep(1.0)
+        self.robot.stop()
+        self.camera.stop()
+
         execute_time = np.array(self.execution_time[1:])
         mean_execute_time = np.mean(execute_time)
         max_execute_time = np.amax(execute_time)
@@ -130,8 +136,5 @@ class RoadCruiser(traitlets.HasTraits):
         plt.hist(execute_time, bins=(0.005 * np.array(list(range(101)))).tolist())
         plt.show()
 
-        time.sleep(1.0)
-        self.robot.stop()
-        self.camera.stop()
         # clear_output(wait=True)
         # %reset -f
