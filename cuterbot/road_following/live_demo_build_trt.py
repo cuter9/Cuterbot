@@ -13,14 +13,16 @@
 
 import torchvision
 import torch
-from torch2trt import torch2trt
+# from torch2trt import torch2trt
+import torch2trt
+from torch2trt import TRTModule
 
 model = torchvision.models.resnet18(pretrained=False)
 model.fc = torch.nn.Linear(512, 2)
 model = model.cuda().eval().half()
 
 # Next, load the trained weights from the ``best_steering_model_xy_resnet34.pth`` file that you uploaded.
-model.load_state_dict(torch.load('best_steering_model_xy_resnet34.pth'))
+model.load_state_dict(torch.load('best_steering_model_xy_resnet18.pth'))
 
 # Currently, the model weights are located on the CPU memory execute the code below to transfer to the GPU device.
 
@@ -48,6 +50,9 @@ model_trt = torch2trt(model, [data], fp16_mode=True)
 
 # Save the optimized model using the cell below
 torch.save(model_trt.state_dict(), 'best_steering_model_xy_trt.pth')
+
+cruiser_model = TRTModule()
+cruiser_model.load_state_dict(torch.load('best_steering_model_xy_trt.pth'))
 
 # ## Next
 # Open live_demo_trt.ipynb to move JetBot with the TensorRT optimized model.
