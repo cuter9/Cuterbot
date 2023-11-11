@@ -27,18 +27,16 @@ import torch.nn.functional as F
 import cv2
 import numpy as np
 import traitlets
-import os
+import time
 
 # from jetbot import ObjectDetector
 # from jetbot.object_detection_yolo import ObjectDetector_YOLO
 from jetbot import Camera
 from jetbot import Robot
 from jetbot import bgr8_to_jpeg
+from jetbot.utils import get_cls_dict_yolo, get_cls_dict_ssd
 import time
-import threading
 
-
-#
 # model = ObjectDetector('ssd_mobilenet_v2_coco_onnx.engine')
 # model = ObjectDetector_YOLO('yolov4-288.engine')
 
@@ -46,6 +44,7 @@ import threading
 class ObjectFollower(traitlets.HasTraits):
     cap_image = traitlets.Any()
     label = traitlets.Integer(default_value=1).tag(config=True)
+    label_text = traitlets.Unicode(default_value='').tag(config=True)
     speed = traitlets.Float(default_value=0.15).tag(config=True)
     turn_gain = traitlets.Float(default_value=0.3).tag(config=True)
     steering_bias = traitlets.Float(default_value=0.0).tag(config=True)
@@ -56,7 +55,7 @@ class ObjectFollower(traitlets.HasTraits):
                  avoider_model='../collision_avoidance/best_model.pth', type_follower_model="SSD"):
         self.follower_model = follower_model
         self.avoider_model = avoider_model
-
+        self.type_follower_model = type_follower_model
         # self.obstacle_detector = Avoider(model_params=self.avoider_model)
         if type_follower_model == "SSD" or type_follower_model == "YOLO":
             from jetbot import ObjectDetector
@@ -65,7 +64,7 @@ class ObjectFollower(traitlets.HasTraits):
         #    from jetbot.object_detection_yolo import ObjectDetector_YOLO
         #    self.object_detector = ObjectDetector_YOLO(self.follower_model)
 
-        self.robot = Robot()
+        self.robot = Robot.instance()
         self.detections = None
         self.matching_detections = None
         self.object_center = None
@@ -74,15 +73,26 @@ class ObjectFollower(traitlets.HasTraits):
 
         # Camera instance would be better to put after all models instantiation
         self.capturer = Camera()
+        # self.img_width = self.capturer.capture_width
+        # self.img_height = self.capturer.capture_height
         self.img_width = self.capturer.width
         self.img_height = self.capturer.height
         self.cap_image = np.empty((self.img_height, self.img_width, 3), dtype=np.uint8).tobytes()
+        self.current_image = np.empty((self.img_height, self.img_width, 3))
 
-    def run_follower_detection(self):
+        self.execution_time = []
+        # self.fps = []
+
+
+    def run_objects_detection(self):
         # self.image = self.capturer.value
         # print(self.image[1][1], np.shape(self.image))
         self.detections = self.object_detector(self.current_image)
         self.matching_detections = [d for d in self.detections[0] if d['label'] == int(self.label)]
+        if self.type_follower_model == "SSD":
+            self.label_text = get_cls_dict_ssd('coco')[int(self.label)]
+        elif self.type_follower_model == "YOLO":
+            self.label_text = get_cls_dict_yolo('coco')[int(self.label)]
         # print(int(self.label), "\n", self.matching_detections)
 
     def object_center_detection(self, det):
@@ -118,9 +128,11 @@ class ObjectFollower(traitlets.HasTraits):
 
     def execute(self, change):
         # print("start excution !")
+        start_time = time.process_time()
+
         self.current_image = change['new']
-        width = self.img_width
-        height = self.img_height
+        # width = self.img_width
+        # height = self.img_height
 
         # print(image)
         # ** execute collision model to determine if blocked
@@ -134,7 +146,7 @@ class ObjectFollower(traitlets.HasTraits):
             return
 
         # compute all detected objects
-        self.run_follower_detection()
+        self.run_objects_detection()
         self.closest_object_detection()
         # detections = self.object_detector(image)
         # print(self.detections)
@@ -142,8 +154,8 @@ class ObjectFollower(traitlets.HasTraits):
         # draw all detections on image
         for det in self.detections[0]:
             bbox = det['bbox']
-            cv2.rectangle(self.current_image, (int(width * bbox[0]), int(height * bbox[1])),
-                          (int(width * bbox[2]), int(height * bbox[3])), (255, 0, 0), 2)
+            cv2.rectangle(self.current_image, (int(self.img_width * bbox[0]), int(self.img_height * bbox[1])),
+                          (int(self.img_width * bbox[2]), int(self.img_height * bbox[3])), (255, 0, 0), 2)
 
         # select detections that match selected class label
 
@@ -151,8 +163,8 @@ class ObjectFollower(traitlets.HasTraits):
         cls_obj = self.closest_object
         if cls_obj is not None:
             bbox = cls_obj['bbox']
-            cv2.rectangle(self.current_image, (int(width * bbox[0]), int(height * bbox[1])),
-                          (int(width * bbox[2]), int(height * bbox[3])), (0, 255, 0), 5)
+            cv2.rectangle(self.current_image, (int(self.img_width * bbox[0]), int(self.img_height * bbox[1])),
+                          (int(self.img_width * bbox[2]), int(self.img_height * bbox[3])), (0, 255, 0), 5)
 
         # otherwise go forward if no target detected
         if cls_obj is None:
@@ -166,6 +178,11 @@ class ObjectFollower(traitlets.HasTraits):
                 float(self.speed + self.turn_gain * center[0] + self.steering_bias),
                 float(self.speed - self.turn_gain * center[0] + self.steering_bias)
             )
+        
+        end_time = time.process_time()
+        # self.execution_time.append(end_time - start_time + self.capturer.cap_time)
+        self.execution_time.append(end_time - start_time)
+        # self.fps.append(1/(end_time - start_time))
 
         # update image widget
         # image_widget.value = bgr8_to_jpeg(image)
@@ -174,12 +191,19 @@ class ObjectFollower(traitlets.HasTraits):
         # return self.cap_image
 
     def stop_run(self, change):
-        # with out:
-        print("start stopping!")
+        import matplotlib.pyplot as plt
+        from jetbot.utils import plot_exec_time
+        print("stop running!")
         self.capturer.unobserve_all()
+        time.sleep(1.0)
         self.robot.stop()
         self.capturer.stop()
 
+        # plot exection time of object follower model processing
+        model_name = "object follower model"
+        plot_exec_time(self.execution_time[1:], model_name, self.follower_model.split('.')[0])
+        # plot_exec_time(self.execution_time[1:], self.fps[1:], model_name, self.follower_model.split('.')[0])
+        plt.show()
 
 class Avoider(object):
 

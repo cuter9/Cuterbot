@@ -1,11 +1,7 @@
-import os
 import time
 
 import PIL.Image
-import matplotlib
 
-matplotlib.use("TkAgg")
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torchvision
@@ -29,6 +25,7 @@ class RoadCruiser(traitlets.HasTraits):
 
     def __init__(self, cruiser_model='resnet18', type_cruiser_model='resnet'):
         super().__init__()
+        self.cruiser_model_str = cruiser_model
         self.cruiser_model = getattr(torchvision.models, cruiser_model)(pretrained=False)
         self.type_cruiser_model = type_cruiser_model
         if type_cruiser_model == "mobilenet":
@@ -42,10 +39,11 @@ class RoadCruiser(traitlets.HasTraits):
             # model.load_state_dict(torch.load('best_steering_model_xy_resnet50.pth'))
 
         self.camera = Camera()
-        self.robot = Robot()
+        self.robot = Robot.instance()
         self.angle = 0.0
         self.angle_last = 0.0
         self.execution_time = []
+        # self.fps = []
         self.x_slider = 0
         self.y_slider = 0
 
@@ -62,11 +60,11 @@ class RoadCruiser(traitlets.HasTraits):
         # model.load_state_dict(torch.load('best_steering_model_xy_resnet50.pth'))
 
         self.device = torch.device('cuda')
-        # model = model.to(device)
-        # model = model.eval().half()
-        self.cruiser_model = self.cruiser_model.float()
-        self.cruiser_model = self.cruiser_model.to(self.device, dtype=torch.float)
-        self.cruiser_model = self.cruiser_model.eval()
+        self.cruiser_model = self.cruiser_model.to(self.device)
+        self.cruiser_model = self.cruiser_model.eval().half()
+        # self.cruiser_model = self.cruiser_model.float()
+        # self.cruiser_model = self.cruiser_model.to(self.device, dtype=torch.float)
+        # self.cruiser_model = self.cruiser_model.eval()
 
     # ---- Creating the Pre-Processing Function
     # 1. Convert from HWC layout to CHW layout
@@ -75,13 +73,15 @@ class RoadCruiser(traitlets.HasTraits):
     # 4. Add a batch dimension
 
     def preprocess(self, image):
-        # mean = torch.Tensor([0.485, 0.456, 0.406]).cuda().half()
-        # std = torch.Tensor([0.229, 0.224, 0.225]).cuda().half()
-        mean = torch.Tensor([0.485, 0.456, 0.406]).cuda()
-        std = torch.Tensor([0.229, 0.224, 0.225]).cuda()
+        mean = torch.Tensor([0.485, 0.456, 0.406]).cuda().half()
+        std = torch.Tensor([0.229, 0.224, 0.225]).cuda().half()
+        # mean = torch.Tensor([0.485, 0.456, 0.406]).cuda()
+        # std = torch.Tensor([0.229, 0.224, 0.225]).cuda()
         image = PIL.Image.fromarray(image)
-        # image = transforms.functional.to_tensor(image).to(device).half()
-        image = transforms.functional.to_tensor(image).to(self.device)
+        # resize the cam captured image to (224, 224) for optimal resnet model inference
+        image = image.resize((224, 224))
+        image = transforms.functional.to_tensor(image).to(self.device).half()
+        # image = transforms.functional.to_tensor(image).to(self.device)
         image.sub_(mean[:, None, None]).div_(std[:, None, None])
         return image[None, ...]
 
@@ -109,8 +109,11 @@ class RoadCruiser(traitlets.HasTraits):
 
         self.robot.left_motor.value = max(min(self.speed_gain + self.steering, 1.0), 0.0)
         self.robot.right_motor.value = max(min(self.speed_gain - self.steering, 1.0), 0.0)
+
         end_time = time.process_time()
-        self.execution_time.append(end_time - start_time + self.camera.cap_time)
+        # self.execution_time.append(end_time - start_time + self.camera.cap_time)
+        self.execution_time.append(end_time - start_time)
+        # self.fps.append(1/(end_time - start_time))
 
     # We accomplish that with the observe function.
     def start_cruising(self):
@@ -118,26 +121,16 @@ class RoadCruiser(traitlets.HasTraits):
         self.camera.observe(self.execute, names='value')
 
     def stop_cruising(self, b):
-        # os.environ['DISPLAY'] = ':10.0'
+        import matplotlib.pyplot as plt
+        from jetbot.utils import plot_exec_time
         # self.camera.unobserve(self.execute, names='value')
         self.camera.unobserve_all()
         time.sleep(1.0)
         self.robot.stop()
         self.camera.stop()
 
-        execute_time = np.array(self.execution_time[1:])
-        mean_execute_time = np.mean(execute_time)
-        max_execute_time = np.amax(execute_time)
-        min_execute_time = np.amin(execute_time)
-
-        print(
-            "Mean execution time of model : %f \nMax execution time of model : %f \nMin execution time of model : %f " \
-            % (mean_execute_time, max_execute_time, min_execute_time))
-
-        fig, ax = plt.subplots()
-        ax.hist(execute_time, bins=(0.005 * np.array(list(range(101)))).tolist())
-        ax.set_xlabel('processing time, sec.')
-        ax.set_ylabel('No. of detection processes')
-        ax.set_title('Histogram of detection processing time: ')
-
+        # plot exection time of road cruiser model processing
+        model_name = "road cruiser model"
+        plot_exec_time(self.execution_time[1:], model_name, self.cruiser_model_str)
+        # plot_exec_time(self.execution_time[1:], self.fps[1:], model_name, self.cruiser_model_str)
         plt.show()
