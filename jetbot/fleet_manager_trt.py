@@ -44,7 +44,7 @@ class FleeterTRT(traitlets.HasTraits):
     cap_image = traitlets.Any()
     label = traitlets.Integer(default_value=1).tag(config=True)
     label_text = traitlets.Unicode(default_value='').tag(config=True)
-    speed = traitlets.Float(default_value=0.15).tag(config=True)
+    speed = traitlets.Float(default_value=0.10).tag(config=True)
     speed_gain = traitlets.Float(default_value=0.01).tag(config=True)
     speed_dev = traitlets.Float(default_value=0.5).tag(config=True)
     turn_gain = traitlets.Float(default_value=0.3).tag(config=True)
@@ -155,6 +155,7 @@ class FleeterTRT(traitlets.HasTraits):
         # if closest object is not detected and followed, do road cruising
         if not self.is_dectected:
             self.road_cruiser.execute(change)
+            self.speed = self.road_cruiser.speed
 
     def start_run(self, change):
         self.capturer.unobserve_all()
@@ -192,9 +193,10 @@ class FleeterTRT(traitlets.HasTraits):
             
             self.mean_view = 0.8 * (bbox[2] - bbox[0]) + 0.2 * self.mean_view_prev
             self.e_view = self.target_view - self.mean_view
+            if np.abs(self.e_view/self.target_view) <= 0.1:
+                self.speed = self.speed +  self.speed_gain * self.e_view + self.speed_dev * (self.e_view - self.e_view_prev)
+            self.road_cruiser.speed = self.speed
 
-            self.speed = self.speed +  self.speed_gain * self.e_view + self.speed_dev * (self.e_view - self.e_view_prev)
-            
             self.mean_view_prev =  self.mean_view
             self.e_view_prev = self.e_view
             
@@ -205,7 +207,6 @@ class FleeterTRT(traitlets.HasTraits):
                 self.mean_view_prev = 0.0
                 self.is_dectected = False
                 self.cap_image = bgr8_to_jpeg(self.current_image)
-                # self.speed = self.default_speed
                 return
             else:
                 self.no_detect -= 1         # observe for a duration for the miss of object detection
