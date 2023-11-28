@@ -17,7 +17,7 @@ def capture_frames(cam):
         if cam.stop_thread.is_set():
             break
             
-        start = time.process_time()            
+        # start = time.process_time()            
         nc = 0
         re, image = cam.cap.read()
         if re:
@@ -25,8 +25,8 @@ def capture_frames(cam):
             # print(image)
             # print("Observed and No of times previous capture nothong : ", nc)
             nc = 0
-            end = time.process_time()
-            cam.cap_time = end - start
+            # end = time.process_time()
+            # cam.cap_time = end - start
         else:
             if nc <= 10:
                 nc += 1
@@ -46,19 +46,20 @@ class OpenCvGstCamera(CameraBase):
     # config
     # width = traitlets.Integer(default_value=224).tag(config=True)
     # height = traitlets.Integer(default_value=224).tag(config=True)
-    width = traitlets.Integer(default_value=300).tag(config=True)
-    height = traitlets.Integer(default_value=300).tag(config=True)
+    width = traitlets.Integer(default_value=512).tag(config=True)
+    height = traitlets.Integer(default_value=512).tag(config=True)
     fps = traitlets.Integer(default_value=30).tag(config=True)
-    # capture_width = traitlets.Integer(default_value=816).tag(config=True)
-    # capture_height = traitlets.Integer(default_value=616).tag(config=True)
-    capture_width = traitlets.Integer(default_value=1920).tag(config=True)
-    capture_height = traitlets.Integer(default_value=1080).tag(config=True)
-    cap_time = traitlets.Float(default_value=0).tag(config=True)
+    capture_width = traitlets.Integer(default_value=816).tag(config=True)
+    capture_height = traitlets.Integer(default_value=616).tag(config=True)
+    # capture_width = traitlets.Integer(default_value=1920).tag(config=True)
+    # capture_height = traitlets.Integer(default_value=1080).tag(config=True)
+    # cap_time = traitlets.Float(default_value=0).tag(config=True)
 
     def __init__(self, *args, **kwargs):
-        self.value = np.empty((self.height, self.width, 3), dtype=np.uint8)
+        # self.value = np.empty((self.height, self.width, 3), dtype=np.uint8)
+        self.value = np.empty((self.capture_height, self.capture_width, 3), dtype=np.uint8)
         self.stop_thread = threading.Event()
-        self.cap_time = 0
+        # self.cap_time = 0
         super().__init__(self, *args, **kwargs)
 
         try:
@@ -85,7 +86,7 @@ class OpenCvGstCamera(CameraBase):
             if self.stop_thread.is_set():
                 break
             
-            start = time.process_time()            
+            # start = time.process_time()            
             nc = 0
             re, image = self.cap.read()
             if re:
@@ -93,10 +94,10 @@ class OpenCvGstCamera(CameraBase):
                 # print(image)
                 # print("Observed and No of times previous capture nothong : ", nc)
                 nc = 0
-                end = time.process_time()
-                self.cap_time = end - start
+                # end = time.process_time()
+                # self.cap_time = end - start
             else:
-                if nc <= 10:
+                if nc <= 5:
                     nc += 1
                     # print("No of times capture nothong : ", nc)
                     continue
@@ -127,7 +128,7 @@ class OpenCvGstCamera(CameraBase):
       
         if hasattr(self, 'cap'):
             self.cap.release()
-            print("Camera operation is released ! ")  
+            print("Camera operation is released ! ")
             os.popen("sudo -S %s"%('service nvargus-daemon restart'), 'w').write(SudoPass)
             print("service nvargus-daemon is restarted ! ")  
 
