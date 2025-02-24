@@ -32,7 +32,7 @@ def mouse_click(event, x, y, flags, param=None):
         # 记录原始点位
         # 位置信息p，和像素值信息p_v
         xy = f"{init_point}" if param else f"{init_point},{str(img_rem[x][y])}"
-        cv2.circle(img_rem, (x, y), 5, (0, 255), thickness=-1)
+        cv2.circle(img_rem, (x, y), 5, (0, 255, 250), thickness=-1)
         cv2.putText(img_rem, xy, (x, y), cv2.FONT_HERSHEY_PLAIN,
                     1.5, (0, 255, 0), thickness=2)
         img_mid = img_rem.copy()  # 记录想要保存的中间状态
@@ -45,11 +45,13 @@ def mouse_click(event, x, y, flags, param=None):
         if not (event == cv2.EVENT_LBUTTONUP):  # 左键未松开，一直被清除
             # 重新显示矩阵
             img_rem = img_mid.copy()  # 不能直接赋值操作，会直接认为是同一地址的数据
+            cv2.circle(img_rem, (x, y), 5, (0, 255, 250), thickness=-1)
             # print(id(img_rem),id(img_mid))
             # cv2.imshow("mid", img_mid)
 
         if lbutton_state == 1:
             cv2.rectangle(img_rem, init_point, cur_point, (0, 0, 255), 2)
+
             cv2.putText(img_rem, str(cur_point), (x, y), cv2.FONT_HERSHEY_PLAIN,
                         1.5, (0, 255, 0), thickness=2)
         if event == cv2.EVENT_LBUTTONUP:  # 松开左键
@@ -71,6 +73,7 @@ def main():
     global img_rem
     global img_mid
     global win_name
+
     # print(id(img_rem),id(img_mid))
     for img_path in image_paths:
         image = cv2.imread(img_path)
