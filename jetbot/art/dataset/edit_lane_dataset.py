@@ -21,6 +21,8 @@ def mouse_click(event, x, y, flags, param=None):
     global img_mid
     global init_point
     global lbutton_state
+    global win_name
+    # img_rem = cv2.imread(img_path).copy()
     # 按下左键，瞬间触发一次事件
     if event == cv2.EVENT_LBUTTONDOWN:
         if create_new_flag == 1:  # 点完右键后第一次点左键
@@ -29,7 +31,7 @@ def mouse_click(event, x, y, flags, param=None):
         init_point = (x, y)  # 记录瞬间点击右键的位置
         # 记录原始点位
         # 位置信息p，和像素值信息p_v
-        xy = f"{init_point}" if param else f"{init_point},{str(img[x][y])}"
+        xy = f"{init_point}" if param else f"{init_point},{str(img_rem[x][y])}"
         cv2.circle(img_rem, (x, y), 5, (0, 255), thickness=-1)
         cv2.putText(img_rem, xy, (x, y), cv2.FONT_HERSHEY_PLAIN,
                     1.5, (0, 255, 0), thickness=2)
@@ -58,7 +60,7 @@ def mouse_click(event, x, y, flags, param=None):
         create_new_flag = 1  # 判断是否重新打开一个图片矩阵
         img_rem = cv2.imread(img_path).copy()
 
-    cv2.imshow(f'image: {img_path}', img_rem)  # 显示的是图片矩阵
+    cv2.imshow(win_name, img_rem)  # 显示的是图片矩阵
 
 
 def main():
@@ -68,9 +70,11 @@ def main():
     global lbutton_state
     global img_rem
     global img_mid
+    global win_name
     # print(id(img_rem),id(img_mid))
     for img_path in image_paths:
         image = cv2.imread(img_path)
+        win_name = f'image: {img_path}'
         create_new_flag = 1
         img_rem = image.copy()  # 存储一个图像矩阵
         img_mid = image.copy()  # 存储一次完成点击和松开动作的图像矩阵
@@ -80,19 +84,20 @@ def main():
         scale = min(scale_width, scale_height)
         window_width = int(image.shape[1] * scale)
         window_height = int(image.shape[0] * scale)
-        cv2.namedWindow(f'image: {img_path}', cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(f'image: {img_path}', window_width, window_height)
+        cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(win_name, window_width, window_height)
 
         # set mouse callback function for window
-        cv2.setMouseCallback(f'image: {img_path}', mouse_click,1)
+        cv2.setMouseCallback(win_name, mouse_click,1)
+        cv2.imshow(win_name, img_rem)
 
-        cv2.imshow(f'image: {img_path}', image)
         while True:
             key = cv2.waitKey()
-            if key == 13:
+            if key == 13 or key == 27 or key == ord('q') :
                 break
-            elif key == 27 or key == ord('q'):
-                break
+
+        if key == 27 or key == ord('q'):
+            break
 
     cv2.destroyAllWindows()
 
