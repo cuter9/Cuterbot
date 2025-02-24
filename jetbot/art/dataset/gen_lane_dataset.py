@@ -74,7 +74,7 @@ def main():
         lane_frame, masked_edges = detect_lanes(image)
         df = pd.DataFrame(masked_edges)
         df.to_csv(path_or_buf=os.path.join(dir_lane_dataset_lane_seg_data,
-                                           os.path.basename(img).split('.')[0]+'.csv'))
+                                           os.path.basename(img).split('.')[0]+'.csv'), index=False)
         # color_edges = np.dstack(masked_edges, masked_edges, masked_edges)
         cv2.imwrite(os.path.join(dir_lane_dataset_lane_images,
                                  os.path.basename(img)), lane_frame)

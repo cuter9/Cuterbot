@@ -2,6 +2,7 @@ import glob
 import os
 
 import cv2
+import numpy as np
 import pandas as pd
 
 dir_depo = 'D:\\AI_Lecture_Demos\\Data_Repo\\Cuterbot_Repo'
@@ -55,13 +56,13 @@ def mouse_click(event, x, y, flags, param=None):
 
         cur_point = (xlc, ylc)
         # if not (event == cv2.EVENT_LBUTTONUP):  # 左键未松开，一直被清除
-            # 重新显示矩阵
+        # 重新显示矩阵
         img_rem = img_mid.copy()  # 不能直接赋值操作，会直接认为是同一地址的数据
         cv2.circle(img_rem, cur_point, 1, (0, 255, 250), thickness=1)
         # print(id(img_rem),id(img_mid))
         # cv2.imshow("mid", img_mid)
 
-    # if lbutton_state == 1:
+        # if lbutton_state == 1:
         cv2.rectangle(img_rem, init_point, cur_point, (0, 0, 255), 2)
         cv2.putText(img_rem, str(cur_point), (x, y), cv2.FONT_HERSHEY_PLAIN,
                     1.5, (0, 255, 0), thickness=2)
@@ -70,7 +71,7 @@ def mouse_click(event, x, y, flags, param=None):
         lbutton_state = 0
         img_rem = img_mid.copy()
         cv2.rectangle(img_rem, init_point, cur_point, (0, 0, 255), 2)
-        cv2.putText(img_rem, str(cur_point), (x, y), cv2.FONT_HERSHEY_PLAIN,
+        cv2.putText(img_rem, str(cur_point), cur_point, cv2.FONT_HERSHEY_PLAIN,
                     1.5, (0, 255, 0), thickness=2)
         img_mid = img_rem.copy()
         # cv2.imshow("mid", img_mid)
@@ -78,6 +79,8 @@ def mouse_click(event, x, y, flags, param=None):
         print(list_boxes)
 
     if event == cv2.EVENT_RBUTTONDOWN:  # 右键按下执行的动作
+        if list_boxes:
+            mask_out(list_boxes)
         create_new_flag = 1  # 判断是否重新打开一个图片矩阵
         img_rem = cv2.imread(img_path).copy()
         list_boxes = []
@@ -85,6 +88,43 @@ def mouse_click(event, x, y, flags, param=None):
     cv2.imshow(win_name, img_rem)  # 显示的是图片矩阵
 
 
+def mask_out(list_boxes):
+    cv2.namedWindow('New Image', cv2.WINDOW_NORMAL)
+    global img_path
+    # global img_rem
+    # global img_mid
+    org_img_path = os.path.join(dir_lane_dataset_images, os.path.basename(img_path))
+    img_new = cv2.imread(org_img_path).copy()
+    cv2.imshow('New Image', img_new)
+    csv_path = os.path.join(dir_lane_dataset_lane_seg_data, os.path.basename(img_path).split('.')[0] + '.csv')
+    df = pd.read_csv(csv_path)
+    masked_edges = df.to_numpy(dtype=np.uint8)
+    mask = np.zeros(masked_edges.shape)
+    mask = mask.astype('uint8')
+    for b in list_boxes:
+        for i in range(b[0][0], b[1][0]):
+            for j in range(b[0][1], b[1][1]):
+                mask[i, j] = 255
+    # masked_edges *= mask
+    # masked_edges_new = np.ma.masked_array(masked_edges, mask=mask, fill_value=0).copy()
+    masked_edges_new = cv2.bitwise_and(masked_edges, mask)
+    lines = cv2.HoughLinesP(masked_edges_new, 1, np.pi / 180, 10, minLineLength=1, maxLineGap=1)
+    gray_img = cv2.cvtColor(img_rem, cv2.COLOR_BGR2GRAY)
+    if lines is not None:
+        for line in lines:
+            x1, y1, x2, y2 = line[0]
+            xm = (x2 - x1) // 2
+            ym = (y2 - y1) // 2
+            mask_nb = np.zeros(img_new.shape[:2], dtype="uint8")
+            cv2.circle(mask_nb, (xm, ym), 5, 255, -1)
+            masked_nb = cv2.bitwise_and(gray_img, gray_img, mask=mask_nb)
+            ret, thresh = cv2.threshold(masked_nb, 20, 255, cv2.THRESH_BINARY_INV)
+            if cv2.countNonZero(thresh) > 35:
+                cv2.line(img_new, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+    cv2.imshow('New Image', img_new)
+
+    # return masked_edges
 def main():
     image_paths = glob.glob(os.path.join(dir_lane_dataset_lane_images, '*.jpg'))
     global img_path
@@ -94,7 +134,6 @@ def main():
     global img_mid
     global win_name
     global list_boxes
-
 
     # print(id(img_rem),id(img_mid))
     for img_path in image_paths:
@@ -113,12 +152,12 @@ def main():
         # cv2.resizeWindow(win_name, window_width, window_height)
 
         # set mouse callback function for window
-        cv2.setMouseCallback(win_name, mouse_click,1)
+        cv2.setMouseCallback(win_name, mouse_click, 1)
         cv2.imshow(win_name, img_rem)
 
         while True:
             key = cv2.waitKey()
-            if key == 13 or key == 27 or key == ord('q') :
+            if key == 13 or key == 27 or key == ord('q'):
                 break
 
         if key == 13:
