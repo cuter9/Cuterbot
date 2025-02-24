@@ -34,8 +34,9 @@ def mouse_click(event, x, y, flags, param=None):
             img_rem = cv2.imread(img_path).copy()
         else:
             img_rem = img_mid.copy()
-
-        init_point = (x, y)  # 记录瞬间点击右键的位置
+        xl = max(min(x, 640), 0)
+        yl = max(min(y, 640), 0)
+        init_point = (xl, yl)  # 记录瞬间点击右键的位置
         # 记录原始点位
         # 位置信息p，和像素值信息p_v
         xy = f"{init_point}" if param else f"{init_point},{str(img_rem[x][y])}"
@@ -49,11 +50,14 @@ def mouse_click(event, x, y, flags, param=None):
         # 按下左键并滑动，不松开就持续触发
         # if lbutton_state == 1 and flags == cv2.EVENT_FLAG_LBUTTON:
     if lbutton_state == 1 and flags == cv2.EVENT_FLAG_LBUTTON:
-        cur_point = (x, y)
+        xlc = max(min(x, 640), 0)
+        ylc = max(min(y, 640), 0)
+
+        cur_point = (xlc, ylc)
         # if not (event == cv2.EVENT_LBUTTONUP):  # 左键未松开，一直被清除
             # 重新显示矩阵
         img_rem = img_mid.copy()  # 不能直接赋值操作，会直接认为是同一地址的数据
-        cv2.circle(img_rem, (x, y), 1, (0, 255, 250), thickness=1)
+        cv2.circle(img_rem, cur_point, 1, (0, 255, 250), thickness=1)
         # print(id(img_rem),id(img_mid))
         # cv2.imshow("mid", img_mid)
 
@@ -71,6 +75,7 @@ def mouse_click(event, x, y, flags, param=None):
         img_mid = img_rem.copy()
         # cv2.imshow("mid", img_mid)
         list_boxes.append([init_point, cur_point])
+        print(list_boxes)
 
     if event == cv2.EVENT_RBUTTONDOWN:  # 右键按下执行的动作
         create_new_flag = 1  # 判断是否重新打开一个图片矩阵
@@ -88,6 +93,8 @@ def main():
     global img_rem
     global img_mid
     global win_name
+    global list_boxes
+
 
     # print(id(img_rem),id(img_mid))
     for img_path in image_paths:
@@ -96,7 +103,7 @@ def main():
         create_new_flag = 1
         img_rem = image.copy()  # 存储一个图像矩阵
         img_mid = image.copy()  # 存储一次完成点击和松开动作的图像矩阵
-
+        list_boxes = []
         # scale_width = 640 / image.shape[1]
         # scale_height = 480 / image.shape[0]
         # scale = min(scale_width, scale_height)
