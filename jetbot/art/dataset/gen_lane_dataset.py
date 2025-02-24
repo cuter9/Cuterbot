@@ -4,7 +4,7 @@ from zipfile import ZipFile
 import cv2
 import numpy as np
 import os
-
+import pandas as pd
 
 def detect_lanes(frame):
     # 轉換為灰度圖
@@ -28,7 +28,7 @@ def detect_lanes(frame):
     masked_edges = cv2.bitwise_and(edges, mask)
 
     # 霍夫變換檢測直線
-    lines = cv2.HoughLinesP(masked_edges, 1, np.pi / 180, 20, minLineLength=10, maxLineGap=10)
+    lines = cv2.HoughLinesP(masked_edges, 1, np.pi / 180, 10, minLineLength=1, maxLineGap=1)
 
     if lines is not None:
         for line in lines:
@@ -42,7 +42,7 @@ def detect_lanes(frame):
             if cv2.countNonZero(thresh) > 35:
                 cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-    return frame
+    return frame, masked_edges
 
 
 dir_depo = 'D:\\AI_Lecture_Demos\\Data_Repo\\Cuterbot_Repo'
@@ -55,6 +55,8 @@ dir_lane_dataset_images = os.path.join(dir_lane_dataset, 'images')
 os.makedirs(dir_lane_dataset_images, exist_ok=True)
 dir_lane_dataset_lane_images = os.path.join(dir_lane_dataset, 'lane_images')
 os.makedirs(dir_lane_dataset_lane_images, exist_ok=True)
+dir_lane_dataset_lane_seg_data = os.path.join(dir_lane_dataset, 'lane_seg_data')
+os.makedirs(dir_lane_dataset_lane_seg_data, exist_ok=True)
 
 with ZipFile(os.path.join(dir_depo, training_datafile), 'r') as zObject:
     file_list = zObject.namelist()
@@ -69,9 +71,13 @@ def main():
     image_paths = glob.glob(os.path.join(dir_lane_dataset_images, '*.jpg'))
     for img in image_paths:
         image = cv2.imread(img)
-        lane_frame = detect_lanes(image)
+        lane_frame, masked_edges = detect_lanes(image)
+        df = pd.DataFrame(masked_edges)
+        df.to_csv(path_or_buf=os.path.join(dir_lane_dataset_lane_seg_data,
+                                           os.path.basename(img).split('.')[0]+'.csv'))
         # color_edges = np.dstack(masked_edges, masked_edges, masked_edges)
-        cv2.imwrite(os.path.join(dir_lane_dataset_lane_images, os.path.basename(img)), lane_frame)
+        cv2.imwrite(os.path.join(dir_lane_dataset_lane_images,
+                                 os.path.basename(img)), lane_frame)
         # cv2.imshow("Lane Detection", lane_frame)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
