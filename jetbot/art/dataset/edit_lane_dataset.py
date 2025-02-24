@@ -22,6 +22,7 @@ def mouse_click(event, x, y, flags, param=None):
     global init_point
     global lbutton_state
     global win_name
+
     # img_rem = cv2.imread(img_path).copy()
     # 按下左键，瞬间触发一次事件
     if event == cv2.EVENT_LBUTTONDOWN:
