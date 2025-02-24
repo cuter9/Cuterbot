@@ -99,16 +99,11 @@ def mask_out(list_boxes):
     csv_path = os.path.join(dir_lane_dataset_lane_seg_data, os.path.basename(img_path).split('.')[0] + '.csv')
     df = pd.read_csv(csv_path)
     masked_edges = df.to_numpy(dtype=np.uint8)
-    mask = np.zeros(masked_edges.shape)
-    mask = mask.astype('uint8')
     for b in list_boxes:
-        for i in range(b[0][0], b[1][0]):
-            for j in range(b[0][1], b[1][1]):
-                mask[i, j] = 255
-    # masked_edges *= mask
-    # masked_edges_new = np.ma.masked_array(masked_edges, mask=mask, fill_value=0).copy()
-    masked_edges_new = cv2.bitwise_and(masked_edges, mask)
-    lines = cv2.HoughLinesP(masked_edges_new, 1, np.pi / 180, 10, minLineLength=1, maxLineGap=1)
+        for i in range(b[0][1], b[1][1]):
+            for j in range(b[0][0], b[1][0]):
+                masked_edges[i, j] = 0
+    lines = cv2.HoughLinesP(masked_edges, 1, np.pi / 180, 10, minLineLength=1, maxLineGap=1)
     gray_img = cv2.cvtColor(img_rem, cv2.COLOR_BGR2GRAY)
     if lines is not None:
         for line in lines:
