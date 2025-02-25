@@ -17,7 +17,7 @@ lbutton_state = 0  # 左键状态标志
 
 # https://blog.csdn.net/weixin_43794311/article/details/125802782
 def mouse_click(event, x, y, flags, param=None):
-    global img_path
+    global org_img_path
     global img_rem
     global create_new_flag
     global img_mid
@@ -26,15 +26,18 @@ def mouse_click(event, x, y, flags, param=None):
     global lbutton_state
     global win_name
     global list_boxes
+    global masked_edges
 
-    # img_rem = cv2.imread(img_path).copy()
+    # img_rem = cv2.imread(org_img_path).copy()
     # 按下左键，瞬间触发一次事件
     if event == cv2.EVENT_LBUTTONDOWN:
         if create_new_flag == 1:  # 点完右键后第一次点左键
             # 重新显示矩阵
-            img_rem = cv2.imread(img_path).copy()
+            # img_rem = cv2.imread(org_img_path).copy()
+            img_rem = lane_marker(masked_edges).copy()
         else:
             img_rem = img_mid.copy()
+
         xl = max(min(x, 640), 0)
         yl = max(min(y, 640), 0)
         init_point = (xl, yl)  # 记录瞬间点击右键的位置
@@ -82,7 +85,8 @@ def mouse_click(event, x, y, flags, param=None):
         if list_boxes:
             mask_out(list_boxes)
         create_new_flag = 1  # 判断是否重新打开一个图片矩阵
-        img_rem = cv2.imread(img_path).copy()
+        # img_rem = cv2.imread(org_img_path).copy()
+        img_rem = lane_marker(masked_edges).copy()
         list_boxes = []
 
     cv2.imshow(win_name, img_rem)  # 显示的是图片矩阵
@@ -90,50 +94,65 @@ def mouse_click(event, x, y, flags, param=None):
 
 def mask_out(list_boxes):
     cv2.namedWindow('New Image', cv2.WINDOW_NORMAL)
-    global img_path
+    global org_img_path
+    global masked_edges
     # global img_rem
     # global img_mid
-    org_img_path = os.path.join(dir_lane_dataset_images, os.path.basename(img_path))
+    org_img_path = os.path.join(dir_lane_dataset_images, os.path.basename(org_img_path))
     img_new = cv2.imread(org_img_path).copy()
     cv2.imshow('New Image', img_new)
-    csv_path = os.path.join(dir_lane_dataset_lane_seg_data, os.path.basename(img_path).split('.')[0] + '.csv')
-    df = pd.read_csv(csv_path)
-    masked_edges = df.to_numpy(dtype=np.uint8)
+    csv_path = os.path.join(dir_lane_dataset_lane_seg_data, os.path.basename(org_img_path).split('.')[0] + '.csv')
     for b in list_boxes:
         for i in range(b[0][1], b[1][1]):
             for j in range(b[0][0], b[1][0]):
                 masked_edges[i, j] = 0
+    new_img = lane_marker(masked_edges)
+    cv2.imshow('New Image', new_img)
+    df_new = pd.DataFrame(masked_edges)
+    df_new.to_csv(path_or_buf=csv_path, index=False)
+
+
+def lane_marker(masked_edges):
+    global org_img_path
+#    org_img_path = os.path.join(dir_lane_dataset_images, os.path.basename(org_img_path))
+    img = cv2.imread(org_img_path).copy()
     lines = cv2.HoughLinesP(masked_edges, 1, np.pi / 180, 10, minLineLength=1, maxLineGap=1)
-    gray_img = cv2.cvtColor(img_rem, cv2.COLOR_BGR2GRAY)
+    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     if lines is not None:
         for line in lines:
             x1, y1, x2, y2 = line[0]
             xm = (x2 - x1) // 2
             ym = (y2 - y1) // 2
-            mask_nb = np.zeros(img_new.shape[:2], dtype="uint8")
+            mask_nb = np.zeros(img.shape[:2], dtype="uint8")
             cv2.circle(mask_nb, (xm, ym), 5, 255, -1)
             masked_nb = cv2.bitwise_and(gray_img, gray_img, mask=mask_nb)
             ret, thresh = cv2.threshold(masked_nb, 20, 255, cv2.THRESH_BINARY_INV)
             if cv2.countNonZero(thresh) > 35:
-                cv2.line(img_new, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.line(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-    cv2.imshow('New Image', img_new)
+    return img
 
-    # return masked_edges
+
 def main():
-    image_paths = glob.glob(os.path.join(dir_lane_dataset_lane_images, '*.jpg'))
-    global img_path
+    # image_paths = glob.glob(os.path.join(dir_lane_dataset_lane_images, '*.jpg'))
+    org_image_paths = glob.glob(os.path.join(dir_lane_dataset_images, '*.jpg'))
+    global org_img_path
     global create_new_flag
     global lbutton_state
     global img_rem
     global img_mid
     global win_name
     global list_boxes
+    global masked_edges
 
     # print(id(img_rem),id(img_mid))
-    for img_path in image_paths:
-        image = cv2.imread(img_path)
-        win_name = f'image: {img_path}'
+    for org_img_path in org_image_paths:
+        image = cv2.imread(org_img_path)
+        win_name = f'image: {org_img_path}'
+        csv_path = os.path.join(dir_lane_dataset_lane_seg_data, os.path.basename(org_img_path).split('.')[0] + '.csv')
+        df = pd.read_csv(csv_path)
+        masked_edges = df.to_numpy(dtype=np.uint8)
+        image = lane_marker(masked_edges)
         create_new_flag = 1
         img_rem = image.copy()  # 存储一个图像矩阵
         img_mid = image.copy()  # 存储一次完成点击和松开动作的图像矩阵
