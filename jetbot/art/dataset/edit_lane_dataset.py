@@ -156,7 +156,8 @@ def main():
                 break
 
         if key == 13:
-            cv2.destroyWindow(win_name)
+            # cv2.destroyWindow(win_name)
+            cv2.destroyAllWindows()
         elif key == 27 or key == ord('q'):
             break
 
