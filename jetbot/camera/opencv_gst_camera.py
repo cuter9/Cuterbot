@@ -112,6 +112,7 @@ class OpenCvGstCamera(CameraBase):
         #   (self.capture_width, self.capture_height, self.fps, self.width, self.height)
         # return 'nvarguscamerasrc sensor-mode=3 ! nvvidconv ! video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! videoconvert ! appsink' % (
         #    self.width, self.height)
+        # gst-launch-1.0 nvarguscamerasrc sensor_mode=2 ! nvvidconv flip-method = 0 ! 'video/x-raw,width=960, height=616' ! nvvidconv ! ximagesink
 
     def start(self):
         if not self.cap.isOpened():
