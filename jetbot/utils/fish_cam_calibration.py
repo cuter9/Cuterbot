@@ -98,6 +98,7 @@ def un_distorted(img, K, D, cal_dim, balance):
     map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D, np.eye(3), new_K, dim3, cv2.CV_16SC2)
     undistorted_img = cv2.remap(img, map1, map2, interpolation=cv2.INTER_LINEAR,
                                 borderMode=cv2.BORDER_CONSTANT)
+    undistorted_img = undistorted_img[80:570, 0:640]  # crop out the black area
     return undistorted_img
 
 
@@ -116,7 +117,6 @@ def main():
     for tm in glob.glob(test_image):
         img = cv2.imread(tm)
         undistorted_img = un_distorted(img, K, D, cal_dim, balance)
-        undistorted_img = undistorted_img[80:570, 0:640]  # crop out the black area
         cv2.namedWindow('Original Image', cv2.WINDOW_NORMAL)
         cv2.imshow('Original Image', img)
         cv2.namedWindow('Undistort Image', cv2.WINDOW_NORMAL)
