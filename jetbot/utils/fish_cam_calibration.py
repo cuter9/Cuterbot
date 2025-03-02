@@ -28,7 +28,7 @@ def calibrate_cam(pattern_images):
 
     counter = 0
     for path in glob.glob(pattern_images):
-        # Load the image and convert it to gray scale
+        # Load the image and convert it to a gray scale
         img = cv2.imread(path)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
