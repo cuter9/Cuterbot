@@ -60,7 +60,7 @@ rms, _, _, _, _ = cv2.fisheye.calibrate(
     rvecs,
     tvecs,
     calibration_flags,
-    (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 1e-6))
+    (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 1e-10))
 
 print("Found " + str(N_OK) + " valid images for calibration")
 print("DIM=" + str(cal_dim))
@@ -82,14 +82,16 @@ test_image_name = "xy_180_319_592f55da-c27a-11ef-82a3-7cb27d304b9d.jpg"
 # test_image = os.path.join(dir_lane_img, test_image_name)
 test_image = os.path.join(dir_lane_img, "*.jpg")
 
-balance = 0.8       # [0, 1]
+balance = 1.0       # [0, 1]
 for tm in glob.glob(test_image):
     test_img = cv2.imread(tm)
-    dim1 = test_img.shape[:2][::-1]  # dim1 is the dimension of input image to un-distort
-    ''' border_x, border_y = int(test_img_org.shape[0]/4), int(test_img_org.shape[1]/4)     # x/2
-    width, height = (int(test_img_org.shape[0] + test_img_org.shape[0]/2),      #x/1
-                     int(test_img_org.shape[1] + test_img_org.shape[1]/2))
     '''
+    border_x, border_y = int(test_img.shape[0]/4), int(test_img.shape[1]/4)     # x/2
+    width, height = (int(test_img.shape[0] + test_img.shape[0]/1.5),      #x/1
+                     int(test_img.shape[1] + test_img.shape[1]/1.5))
+    # dim1 = (width, height)
+    '''
+    dim1 = test_img.shape[:2][::-1]  # dim1 is the dimension of input image to un-distort
     scaled_K = K * dim1[0] / cal_dim[0]  # The values of K are to scale with calibration image dimension.
     scaled_K[2][2] = 1.0  # Except that K[2][2] is always 1.0
     dim2 = dim1     # dim of input image for un-distort
@@ -101,7 +103,7 @@ for tm in glob.glob(test_image):
     # test_img = cv2.copyMakeBorder(test_img_org, border_y, border_y, border_x, border_x, cv2.BORDER_ISOLATED)
     map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D, np.eye(3), new_K, dim3, cv2.CV_16SC2)
     undistorted_img = cv2.remap(test_img, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-
+    undistorted_img = undistorted_img[80:570, 0:640]
     cv2.namedWindow('Original Image', cv2.WINDOW_NORMAL)
     cv2.imshow('Original Image', test_img)
     cv2.namedWindow('Undistort Image', cv2.WINDOW_NORMAL)
