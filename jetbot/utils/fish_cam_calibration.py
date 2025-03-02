@@ -59,7 +59,7 @@ def calibrate_cam(pattern_images):
         rvecs,
         tvecs,
         calibration_flags,
-        (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 1e-10))
+        (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, 1e-10))
 
     print("Found " + str(N_OK) + " valid images for calibration")
     print("DIM=" + str(cal_dim))
@@ -98,7 +98,7 @@ def un_distorted(img, K, D, cal_dim, balance):
     map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D, np.eye(3), new_K, dim3, cv2.CV_16SC2)
     undistorted_img = cv2.remap(img, map1, map2, interpolation=cv2.INTER_LINEAR,
                                 borderMode=cv2.BORDER_CONSTANT)
-    undistorted_img = undistorted_img[80:570, 0:640]  # crop out the black area
+    undistorted_img = undistorted_img[80:570, 0:640]  # crop out the extension black area
     return undistorted_img
 
 
