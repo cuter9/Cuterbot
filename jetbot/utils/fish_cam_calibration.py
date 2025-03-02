@@ -17,8 +17,9 @@ import os
 
 def calibrate_cam(pattern_images):
     # Define the chess board rows and columns
+    # https://docs.opencv.org/4.x/da/d0d/tutorial_camera_calibration_pattern.html
     CHECKERBOARD = (6, 9)
-    subpix_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.1)
+    subpix_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.01)
     calibration_flags = cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC + cv2.fisheye.CALIB_CHECK_COND + cv2.fisheye.CALIB_FIX_SKEW
     objp = np.zeros((1, CHECKERBOARD[0] * CHECKERBOARD[1], 3), np.float32)
     objp[0, :, :2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2)
@@ -78,8 +79,7 @@ def un_distorted(img, K, D, cal_dim, balance):
     # newK = K.copy()
     # newK[0][2] = fs * newK[0][2]
     # newK[1][2] = fs * newK[1][2]
-    '''
-    '''
+
     border_x, border_y = int(test_img.shape[0]/4), int(test_img.shape[1]/4)     # x/2
     width, height = (int(test_img.shape[0] + test_img.shape[0]/1.5),      #x/1
                      int(test_img.shape[1] + test_img.shape[1]/1.5))
