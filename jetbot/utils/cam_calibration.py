@@ -6,11 +6,17 @@ import cv2 as cv
 import glob
 
 # termination criteria
-criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+# criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.1)
 
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
-objp = np.zeros((6 * 7, 3), np.float32)
-objp[:, :2] = np.mgrid[0:7, 0:6].T.reshape(-1, 2)
+# objp = np.zeros((6 * 7, 3), np.float32)
+# objp[:, :2] = np.mgrid[0:7, 0:6].T.reshape(-1, 2)
+
+# Define the chess board rows and columns
+CHECKERBOARD = (6, 9)
+objp = np.zeros((1, CHECKERBOARD[0] * CHECKERBOARD[1], 3), np.float32)
+objp[0, :, :2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2)
 
 # Arrays to store object points and image points from all the images.
 objpoints = []  # 3d point in real world space
@@ -25,7 +31,11 @@ cap = cv.VideoCapture(gst_str, cv.CAP_GSTREAMER)
 # dir_images = "D:\\AI_Lecture_Demos\\Data_Repo\\Cuterbot_Repo\\lane_dataset\\images"
 # test_images = "/home/cuterbot/Cuterbot_Demo/notebooks/teleoperation/snapshots/ecb7fa78-f655-11ef-a9e5-7cb27d304b9d.jpg"
 # test_img = cv.imread(test_images)
+dir_patterns = "/home/cuterbot/Cuterbot_Demo/notebooks/teleoperation/snapshots"
+images = os.path.join(dir_patterns, '*.jpg')
+
 # for fname in images:
+counter = 0
 while True:
     # img = cv.imread(fname)
     # gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -55,16 +65,41 @@ while True:
         imgpoints.append(corners2)
 
         # Draw and display the corners
-        cv.drawChessboardCorners(cap_image, (7, 6), corners2, ret)
+        cap_image_cp = cap_image
+        cv.drawChessboardCorners(cap_image_cp, (7, 6), corners2, ret)
         cv.namedWindow('img', cv.WINDOW_NORMAL)
         cv.resizeWindow('img', 960, 640)
-        cv.imshow('img', cap_image)
+        cv.imshow('img', cap_image_cp)
         key = cv.waitKey(0)
         if key == 13:
+            counter += 1
+            cv.imwrite(os.path.join(dir_patterns, f'pattern_{counter}.jpg'), cap_image)
             break
+        else:
+            counter += 1
+            cv.imwrite(os.path.join(dir_patterns, f'pattern_{counter}.jpg'), cap_image)
+            cv.destroyWindow('img')
+    print(ret)
 cv.destroyAllWindows()
 
-ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+# ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+
+N_imm = counter  # number of calibration images
+K = np.zeros((3, 3))
+D = np.zeros((4, 1))
+rvecs = [np.zeros((1, 1, 3), dtype=np.float64) for i in range(N_imm)]
+tvecs = [np.zeros((1, 1, 3), dtype=np.float64) for i in range(N_imm)]
+calibration_flags = cv.fisheye.CALIB_RECOMPUTE_EXTRINSIC + cv.fisheye.CALIB_CHECK_COND + cv.fisheye.CALIB_FIX_SKEW
+rms, _, _, _, _ = cv.fisheye.calibrate(
+    objpoints,
+    imgpoints,
+    gray.shape[::-1],
+    K,
+    D,
+    rvecs,
+    tvecs,
+    calibration_flags,
+    (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 1e-6))
 
 test_images = "/home/cuterbot/Cuterbot_Demo/notebooks/teleoperation/snapshots/e93b81ee-f655-11ef-a9e5-7cb27d304b9d.jpg"
 # test_images = "/home/cuterbot/Cuterbot_Demo/notebooks/teleoperation/snapshots/xy_000_334_e4e72c2a-c279-11ef-82a3-7cb27d304b9d.jpg"
