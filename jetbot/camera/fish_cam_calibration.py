@@ -20,7 +20,9 @@ def calibrate_cam(pattern_images):
     # https://docs.opencv.org/4.x/da/d0d/tutorial_camera_calibration_pattern.html
     CHECKERBOARD = (6, 9)
     subpix_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.01)
-    calibration_flags = cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC + cv2.fisheye.CALIB_CHECK_COND + cv2.fisheye. 
+    calibration_flags = (cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC +
+                         cv2.fisheye.CALIB_CHECK_COND +
+                         cv2.fisheye.CALIB_FIX_SKEW)
     objp = np.zeros((1, CHECKERBOARD[0] * CHECKERBOARD[1], 3), np.float32)
     objp[0, :, :2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2)
 
@@ -113,7 +115,7 @@ def main():
     test_image_name = "xy_180_319_592f55da-c27a-11ef-82a3-7cb27d304b9d.jpg"
     # test_image = os.path.join(dir_lane_img, test_image_name)
     test_image = os.path.join(dir_lane_img, "*.jpg")
-    balance = 1.0  # [0, 1]
+    balance = 1  # [0, 1]
     for tm in glob.glob(test_image):
         img = cv2.imread(tm)
         undistorted_img = un_distorted(img, K, D, cal_dim, balance)
