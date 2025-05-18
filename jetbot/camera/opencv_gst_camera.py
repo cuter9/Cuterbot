@@ -88,7 +88,6 @@ class OpenCvGstCamera(CameraBase):
     def _capture_frames(self):
 
         while True:
-
             if self.stop_thread.is_set():
                 break
 
