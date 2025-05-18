@@ -119,9 +119,9 @@ def main():
     for tm in glob.glob(test_image):
         img = cv2.imread(tm)
         undistorted_img = un_distorted(img, K, D, cal_dim, balance)
-        cv2.namedWindow('Original Image', cv2.WINDOW_NORMAL)
+        cv2.namedWindow('Original Image', cv2.WINDOW_AUTOSIZE)
         cv2.imshow('Original Image', img)
-        cv2.namedWindow('Undistort Image', cv2.WINDOW_NORMAL)
+        cv2.namedWindow('Undistort Image', cv2.WINDOW_AUTOSIZE)
         cv2.imshow('Undistort Image', undistorted_img)
         key = cv2.waitKey(0)
         if key == 27 or key == ord('q'):
