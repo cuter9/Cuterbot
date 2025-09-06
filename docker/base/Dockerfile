@@ -16,7 +16,7 @@ RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
 # RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
 # RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add -
 
-RUN apt-get update && apt-get install -y net-tools nano cmake python3-tk
+RUN apt-get update && apt-get install -y net-tools nano cmake python3-tk apt-utils
 
 
 
@@ -144,13 +144,14 @@ RUN cd ${OPT}/torch2trt && \
 # ==================================
 # INSTALL JETBOT DEPENDENCIES QWIIC
 # ==================================
-ENV QWIIC_DIR=/opt/Qwiic_Py
-ENV QWIIC_I2C_DIR=/opt/Qwiic_Py/qwiic_i2c
-RUN cd /opt && git clone --recurse-submodules https://github.com/sparkfun/Qwiic_Py.git 
-RUN cd ${QWIIC_DIR}/qwiic/drivers && rm -rf qwiic_as6212 qwiic_kx13x && \
-    cd ${QWIIC_DIR} && python3 setup.py bdist_wheel && cd dist && pip3 install *.whl && \
-    cd ${QWIIC_I2C_DIR} && python3 setup.py bdist_wheel && cd dist && pip3 install *.whl && \
-    cd /opt && rm -rf Qwiic_Py
+RUN pip3 install sparkfun-qwiic
+# ENV QWIIC_DIR=/opt/Qwiic_Py
+# ENV QWIIC_I2C_DIR=/opt/Qwiic_Py/qwiic_i2c
+# RUN cd /opt && git clone --recurse-submodules https://github.com/sparkfun/Qwiic_Py.git 
+# RUN cd ${QWIIC_DIR}/qwiic/drivers && rm -rf qwiic_as6212 qwiic_kx13x && \
+#    cd ${QWIIC_DIR} && python3 setup.py bdist_wheel && cd dist && pip3 install *.whl && \
+#    cd ${QWIIC_I2C_DIR} && python3 setup.py bdist_wheel && cd dist && pip3 install *.whl && \
+#    cd /opt && rm -rf Qwiic_Py
 
 
 # ==============
