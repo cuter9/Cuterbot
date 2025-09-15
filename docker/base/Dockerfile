@@ -145,7 +145,7 @@ RUN cd ${OPT}/torch2trt && \
 # INSTALL JETBOT DEPENDENCIES QWIIC
 # ==================================
 RUN pip3 install sparkfun-qwiic==2.0.0
-RUN pip3 install sparkfun-qwiic-i2c==2.0.0
+RUN pip3 install 'sparkfun-qwiic-i2c<1.0.0'
 # ENV QWIIC_DIR=/opt/Qwiic_Py
 # ENV QWIIC_I2C_DIR=/opt/Qwiic_Py/qwiic_i2c
 # RUN cd /opt && git clone -b master --recurse-submodules https://github.com/sparkfun/Qwiic_Py.git
