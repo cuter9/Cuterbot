@@ -80,14 +80,10 @@ echo -e "\e[45m Install pycuda package \e[0m"
 set -e
 
 cd $HOME/Downloads
-VER_PYCUDA="v2024.1.2"
-
-if ! which nvcc > /dev/null; then
-  echo "ERROR: nvcc not found"
-  exit
-fi
+VER_PYCUDA="v2022.1"
 
 echo "** Install requirements"
+sudo apt-get install ctags
 sudo apt-get install -y build-essential python3-dev
 sudo apt-get install -y libboost-python-dev libboost-thread-dev
 sudo pip3 install setuptools
@@ -96,6 +92,14 @@ sudo rm -rf pycuda
 git clone -b $VER_PYCUDA --recurse-submodules https://github.com/inducer/pycuda.git
 cd pycuda
 python3 configure.py --cuda-root="/usr/local/cuda-10.2/" 
-sudo make install
+
+if ! which nvcc > /dev/null; then
+  echo "ERROR: nvcc not found"
+  exit
+fi
+
+# sudo make install
+sudo python3 setup.py bdist_wheel
+sudo pip3 install ./dist/*.whl
 
 sudo pip3 install "onnx==1.11.0"
