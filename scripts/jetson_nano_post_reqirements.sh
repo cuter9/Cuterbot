@@ -91,18 +91,18 @@ sudo pip3 install setuptools
 sudo rm -rf pycuda
 git clone -b $VER_PYCUDA --recurse-submodules https://github.com/inducer/pycuda.git
 cd pycuda
-python3 configure.py --cuda-root="/usr/local/cuda-10.2/" 
 
 if ! which nvcc > /dev/null; then
-  cat >> ~/.bashrc << EOF
-  export CUDA_HOME=/usr/local/cuda # Adjust the path if needed
-  export PATH=${CUDA_HOME}/bin:${PATH}
-  export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:$LD_LIBRARY_PATHEOF
-  EOF
-  source ~/.bashrc
+cat >> ~/.bashrc << EOF
+export CUDA_HOME=/usr/local/cuda # Adjust the path if needed
+export PATH=${CUDA_HOME}/bin:${PATH}
+export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:$LD_LIBRARY_PATHEOF
+EOF
+source ~/.bashrc
 #  echo "ERROR: nvcc not found"
 #  exit
 fi
+python3 configure.py --cuda-root="/usr/local/cuda-10.2/" 
 
 # sudo make install
 sudo python3 setup.py bdist_wheel
