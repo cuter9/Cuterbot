@@ -1,4 +1,6 @@
 cd $HOME/Downloads
+
+: <<'OlderScripts'
 # ENV QWIIC_I2C_DIR=/opt/Qwiic_Py/qwiic_i2c
 if [ ! -d "./Qwiic_Py" ]; then 
   git clone --recurse-submodules https://github.com/sparkfun/Qwiic_Py.git 
@@ -18,6 +20,11 @@ python3 setup.py bdist_wheel && cd dist && sudo pip3 install *.whl && cd ..
 
 pushd ./qwiic_i2c
 python3 setup.py bdist_wheel && cd dist && sudo pip3 install *.whl
+
+OlderScripts
+
+sudo pip3 install sparkfun-qwiic==2.0.0
+sudo pip3 install 'sparkfun-qwiic-i2c<1.0.0'
 
 # cd $HOME/Downloads && rm -rf Qwiic_Py
 sudo pip3 install Adafruit_MotorHat
