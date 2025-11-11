@@ -58,7 +58,7 @@ cd $HOME/Downloads
 # sudo apt install -y libjpeg-dev zlib1g-dev libpython3-dev libopenblas-dev libavcodec-dev libavformat-dev libswscale-dev libomp-dev ffmpeg
 sudo apt install -y libjpeg-dev zlib1g-dev libpython3-dev libopenblas-dev libavcodec-dev libavformat-dev libswscale-dev
 
-wget -O "torchvision-0.11.0a0+fa347eb-cp36-cp36m-linux_aarch64.whl" --no-check-certificate -r "https://docs.google.com/uc?export=download&id=13amRc5DLaU4zPKS4K50YtjUunkcDXH2"
+wget -O "torchvision-0.11.0a0+fa347eb-cp36-cp36m-linux_aarch64.whl" --no-check-certificate -r "https://docs.google.com/uc?export=download&id=13amRc5DLaU4zPKS4K50YtjUunkcDXH2x"
 export RC=$?
 if [ "$RC" = "0" ]; then
   echo -e "\e[45m torchvision wheel package has been downloaded from google drive. Start install torchvision \e[0m"
