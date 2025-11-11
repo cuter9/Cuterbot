@@ -33,7 +33,7 @@ def plot_loss(loss_data, best_loss, no_epoch,
     ax_1.set_xlim(0, xlim)
 
     plt.title("Training convergence ({:s} with {:s}) -- {:s} \n current best test loss : {:.4f}".
-              format(processor, train_method, train_model, best_loss),
+              format(train_method, processor, train_model, best_loss),
               fontdict=font_title)
     plt.xlabel('epoch', fontdict=font)
     plt.ylabel('loss', fontdict=font)
