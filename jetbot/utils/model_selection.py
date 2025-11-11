@@ -116,23 +116,23 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
 
     elif 'mobilenet_v3' in pth_model_name:  # 'mobilenet_v3_large' or  'mobilenet_v3_small'
         model_type = "MobileNet"
-        # enter the code to convert pytorch 'mobilenet_v3' model so that can be used in Jetbot application.
+        # add code here to convert pytorch 'mobilenet_v3' model so that can be used in Jetbot application.
 
     elif pth_model_name == 'mobilenet_v2':      # mobilenet_v2
         model_type = "MobileNet"
-        # enter the code to convert pytorch 'mobilenet_v2' model so that can be used in Jetbot application.
+        # add code here to convert pytorch 'mobilenet_v2' model so that can be used in Jetbot application.
 
     elif pth_model_name == 'vgg11':  # VGGNet
         model_type = "VggNet"
-        # enter the code to convert pytorch 'vgg11' model so that can be used in Jetbot application.
+        # add code here to convert pytorch 'vgg11' model so that can be used in Jetbot application.
 
     elif 'efficientnet' in pth_model_name:  # efficientnet_b0, efficientnet_b1, efficientnet_b2, efficientnet_b3, ....
         model_type = "EfficientNet"
-        # enter the code to convert pytorch 'efficientnet' model so that can be used in Jetbot application.
+        # add code here  to convert pytorch 'efficientnet' model so that can be used in Jetbot application.
 
     elif pth_model_name == 'inception_v3':  # Inception_v3
         model_type = "InceptionNet"
-        # enter the code to convert pytorch 'inception_v3' model so that can be used in Jetbot application.
+        # add code here to convert pytorch 'inception_v3' model so that can be used in Jetbot application.
 
     elif pth_model_name == 'googlenet':  # Inception
         model_type = "GoogleNet"
@@ -151,22 +151,22 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
 
     elif "densenet" in pth_model_name:  # densenet121, densenet161, densenet169, densenet201
         model_type = "DenseNet"
-        # enter the code to convert pytorch 'densenet' model so that can be used in Jetbot application.
+        # add code here to convert pytorch 'densenet' model so that can be used in Jetbot application.
 
     elif "shufflenet_v2" in pth_model_name:  # shufflenet_v2_x1_0 or shufflenet_v2_x0_5
         model_type = "ShuffleNet"
-        # enter the code to convert pytorch 'shufflenet_v2' model so that can be used in Jetbot application.
+        # add code here to convert pytorch 'shufflenet_v2' model so that can be used in Jetbot application.
 
     elif "mnasnet" in pth_model_name:  #  mnasnet2_0,  mnasnet1_5, mnasnet1_0, or mnasnet0_5
         model_type = "MnasNet"
-        # enter the code to convert pytorch 'mnasnet' model so that can be used in Jetbot application.
+        # add code here to convert pytorch 'mnasnet' model so that can be used in Jetbot application.
 
     elif "vit" in pth_model_name:  #  vit_b_16,  vit_b_32, vit_l_16, vit_l_32, vit_h_14
         # need to pip install flash-attn --no-build-isolation in linux environment only
         # ref: https://stackoverflow.com/questions/78746073/how-to-solve-torch-was-not-compiled-with-flash-attention-warning
         # vit model is not available for jetson nano run in a torch vision version < 0.12
         model_type = "ViTNet"
-        # enter the code to convert pytorch 'vit' model so that can be used in Jetbot application.
+        # add code here to convert pytorch 'vit' model so that can be used in Jetbot application.
 
     else:
         assert (
