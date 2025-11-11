@@ -53,6 +53,8 @@ sudo -H python3 -m pip install -U testresources setuptools numpy==1.18.5 future=
 # TF-1.15
 sudo -H python3 -m pip install --pre --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v461 'tensorflow<2'
 
+mkdir -p $HOME/Downloads
+
 # Install the pre-built PyTorch pip wheel 
 echo -e "\e[45m Install the pre-built PyTorch pip wheel  \e[0m"
 cd
@@ -66,18 +68,29 @@ sudo -H python3 -m pip install torch-1.10.0-cp36-cp36m-linux_aarch64.whl
 echo -e "\e[45m Install torchvision package \e[0m"
 cd
 sudo apt install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
-sudo rm -rf torchvision
-git clone --branch v0.11.1 https://github.com/pytorch/vision torchvision
-# git clone https://github.com/pytorch/vision torchvision
-cd torchvision
-export BUILD_VERSION=0.11.1
-#git checkout v0.4.0
-sudo -H python3 setup.py install
-# sudo -H python3 -m pip install torchvision
+
+
+cd $HOME\Downloads
+wget -O "torchvision-0.11.0a0+fa347eb-cp36-cp36m-linux_aarch64.whl" --no-check-certificate -r "https://docs.google.com/uc?export=download&id=13amRc5DLaU4zPKS4K50YtjUunkcDXH2"
+export RC=$?
+if [ "$RC" = "0" ]; then
+  echo -e "\e[45m torchvision wheel package has been downloaded from google drive. Start install torchvision \e[0m"
+  sudo pip3 install torchvision-0.11.0a0+fa347eb-cp36-cp36m-linux_aarch64.whl
+else
+  echo -e "\e[45m No exixting torchvision wheel package, build the wheel froom begining. \e[0m"
+  export BUILD_VERSION=0.11.1  # for torch version v1.10.0
+# export BUILD_VERSION=0.12.0
+  sudo rm -rf torchvision
+  git clone --branch v$BUILD_VERSION https://github.com/pytorch/vision torchvision
+  cd torchvision
+  sudo -H python3 setup.py bdist_wheel
+  cd dist
+  sudo pip3 install *.whl
+fi
 
 # Install torch2trt
 echo -e "\e[45m Install torch2trt package \e[0m"
-cd $HOME
+cd $HOME\Downloads
 sudo rm -rf torch2trt
 sudo -H python3 -m pip install packaging
 git clone https://github.com/NVIDIA-AI-IOT/torch2trt

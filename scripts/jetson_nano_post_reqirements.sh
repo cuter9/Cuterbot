@@ -37,6 +37,8 @@ sudo -H python3 -m pip install --pre --extra-index-url https://developer.downloa
 # https://forums.developer.nvidia.com/t/pytorch-for-jetson/72048
 echo -e "\e[45m Install the pre-built PyTorch pip wheel  \e[0m"
 
+mkdir -p $HOME/Downloads
+
 cd $HOME/Downloads
 sudo apt install -y libopenblas-base libopenmpi-dev
 sudo pip3 install wget
@@ -55,14 +57,23 @@ echo -e "\e[45m Install torchvision package \e[0m"
 cd $HOME/Downloads
 # sudo apt install -y libjpeg-dev zlib1g-dev libpython3-dev libopenblas-dev libavcodec-dev libavformat-dev libswscale-dev libomp-dev ffmpeg
 sudo apt install -y libjpeg-dev zlib1g-dev libpython3-dev libopenblas-dev libavcodec-dev libavformat-dev libswscale-dev
-export BUILD_VERSION=0.11.1  # for torch version v1.10.0
+
+wget -O "torchvision-0.11.0a0+fa347eb-cp36-cp36m-linux_aarch64.whl" --no-check-certificate -r "https://docs.google.com/uc?export=download&id=13amRc5DLaU4zPKS4K50YtjUunkcDXH2"
+export RC=$?
+if [ "$RC" = "0" ]; then
+  echo -e "\e[45m torchvision wheel package has been downloaded from google drive. Start install torchvision \e[0m"
+  sudo pip3 install torchvision-0.11.0a0+fa347eb-cp36-cp36m-linux_aarch64.whl
+else
+  echo -e "\e[45m No exixting torchvision wheel package, build the wheel froom begining. \e[0m"
+  export BUILD_VERSION=0.11.1  # for torch version v1.10.0
 # export BUILD_VERSION=0.12.0
-sudo rm -rf torchvision
-git clone --branch v$BUILD_VERSION https://github.com/pytorch/vision torchvision
-cd torchvision
-sudo -H python3 setup.py bdist_wheel
-cd dist
-sudo pip3 install *.whl
+  sudo rm -rf torchvision
+  git clone --branch v$BUILD_VERSION https://github.com/pytorch/vision torchvision
+  cd torchvision
+  sudo -H python3 setup.py bdist_wheel
+  cd dist
+  sudo pip3 install *.whl
+fi
 # sudo -H python3 -m pip install torchvision
 
 # Install torch2trt
