@@ -1,6 +1,5 @@
-cd $HOME/Downloads
-
 : <<'OlderScripts'
+cd $HOME/Downloads
 # ENV QWIIC_I2C_DIR=/opt/Qwiic_Py/qwiic_i2c
 if [ ! -d "./Qwiic_Py" ]; then 
   git clone --recurse-submodules https://github.com/sparkfun/Qwiic_Py.git 
