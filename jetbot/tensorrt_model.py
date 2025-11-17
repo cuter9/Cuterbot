@@ -200,7 +200,9 @@ def torch_device_from_trt(device):
 def load_plugins():
     library_path = os.path.join(os.path.dirname(__file__), 'yolo_tensorrt/libyolo_layer.so')
     ctypes.CDLL(library_path)
-
+    # load lib for mobilenet v3
+    library_path_mobile_v3 = os.path.join(os.path.dirname(__file__), "ssd_tensorrt/libnvdsinfer_custom_impl_ssd.so")
+    ctypes.CDLL(library_path_mobile_v3)
 
 class TRTModel(object):
 
