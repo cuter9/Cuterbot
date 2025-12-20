@@ -8,6 +8,8 @@ from .camera_base import CameraBase
 # import os
 import time
 
+from ..image import bgr8_to_jpeg
+
 SudoPass = 'cuterbot'
 
 
@@ -26,6 +28,7 @@ def capture_frames(cam):
 
 class OpenCvGstCamera(CameraBase):
     value = traitlets.Any()
+    image_display = traitlets.Any()
 
     # config
     # width = traitlets.Integer(default_value=224).tag(config=True)
@@ -35,13 +38,18 @@ class OpenCvGstCamera(CameraBase):
     fps = traitlets.Integer(default_value=30).tag(config=True)
     # capture_width = traitlets.Integer(default_value=816).tag(config=True)
     # capture_height = traitlets.Integer(default_value=616).tag(config=True)
-    capture_width = traitlets.Integer(default_value=1640).tag(config=True)
-    capture_height = traitlets.Integer(default_value=1232).tag(config=True)
+    # capture_width = traitlets.Integer(default_value=1640).tag(config=True)    # sensor_mode = 3
+    # capture_height = traitlets.Integer(default_value=1232).tag(config=True)
+    width_display = traitlets.Integer(default_value=224).tag(config=True)
+    height_display = traitlets.Integer(default_value=224).tag(config=True)
+
 
     # cap_time = traitlets.Float(default_value=0).tag(config=True)
 
     def __init__(self, *args, **kwargs):
         self.value = np.empty((self.height, self.width, 3), dtype=np.uint8)
+        self.image_display = np.empty((self.height_display, self.width_display, 3), dtype=np.uint8)
+
         # self.value = np.empty((self.capture_height, self.capture_width, 3), dtype=np.uint8)
         self.stop_thread = threading.Event()
         super().__init__(self, *args, **kwargs)
@@ -56,6 +64,8 @@ class OpenCvGstCamera(CameraBase):
                 raise RuntimeError('Could not read image from camera.')
 
             self.value = image
+            self.image_display = cv2.resize(image, (self.width_display, self.height_display), interpolation=cv2.INTER_LINEAR)
+
             self.start()
 
         except:
@@ -74,6 +84,8 @@ class OpenCvGstCamera(CameraBase):
             re, image = self.cap.read()
             if re:
                 self.value = image
+                self.image_display = cv2.resize(image, (self.width_display, self.height_display), interpolation=cv2.INTER_LINEAR)
+
                 # print(image)
             else:
                 if not self.cap.isOpened():
@@ -85,12 +97,15 @@ class OpenCvGstCamera(CameraBase):
                 # break
 
     def _gst_str(self):
-        return 'nvarguscamerasrc ! video/x-raw(memory:NVMM), width=%d, height=%d, format=(string)NV12, framerate=(fraction)%d/1 ! nvvidconv flip-method=0 ! video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! videoconvert ! appsink' % \
-            (self.capture_width, self.capture_height, self.fps, self.width, self.height)
+        return f'nvarguscamerasrc sensor_id=0 sensor_mode=3 ! nvvidconv flip-method=0 ! video/x-raw, width={self.width}, height={self.height}, format=(string)BGRx ! videoconvert ! appsink'
+
+        # return 'nvarguscamerasrc ! video/x-raw(memory:NVMM), width=%d, height=%d, format=(string)NV12, framerate=(fraction)%d/1 ! nvvidconv flip-method=0 ! video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! videoconvert ! appsink' % \
+        #    (self.capture_width, self.capture_height, self.fps, self.width, self.height)
         # return 'nvarguscamerasrc sensor-mode=3 ! video/x-raw(memory:NVMM), width=%d, height=%d, format=(string)NV12, framerate=(fraction)%d/1 ! nvvidconv ! video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! videoconvert ! appsink' % \
         #   (self.capture_width, self.capture_height, self.fps, self.width, self.height)
         # return 'nvarguscamerasrc sensor-mode=3 ! nvvidconv ! video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! videoconvert ! appsink' % (
         #    self.width, self.height)
+        # gst-launch-1.0 nvarguscamerasrc sensor_id=0 sensor_mode=2 ! nvvidconv  flip-method=0 ! video/x-raw,width=300, height=300 ! nvvidconv ! ximagesink -e
 
     def start(self):
         if not self.cap.isOpened():
@@ -127,3 +142,8 @@ class OpenCvGstCamera(CameraBase):
     @staticmethod
     def instance(*args, **kwargs):
         return OpenCvGstCamera(*args, **kwargs)
+
+    def save_image(self, image_path):
+        with open(image_path, 'wb') as f:
+            f.write(bgr8_to_jpeg(self.value))
+
