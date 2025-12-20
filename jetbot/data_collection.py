@@ -24,11 +24,11 @@ class DataCollection(HasTraits):
         y = y_slider_value
         x = int(x * self.width_display / 2 + self.width_display / 2)
         y = int(y * self.height_display / 2 + self.height_display / 2)
-        image = cv2.circle(image, (x, y), 2, (0, 255, 0), 1)
-        image = cv2.circle(image, (int(self.width_display / 2), int(self.height_display)), 4, (0, 0, 255), 1)
-        image = cv2.line(image, (x, y), (int(self.width_display / 2), int(self.height_display)), (255, 0, 0), 1)
+        image = cv2.circle(image, (x, y), 4, (0, 255, 0), 2)
+        image = cv2.circle(image, (int(self.width_display / 2), int(self.height_display)), 4, (0, 0, 255), 2)
+        image = cv2.line(image, (x, y), (int(self.width_display / 2), int(self.height_display)), (255, 0, 0), 2)
         image = cv2.line(image, (0, int(self.height_display / 2)), (int(self.width_display), int(self.height_display / 2)),
-                         (0, 255, 255), 1)
+                         (0, 255, 255), 2)
         self.xy_image = bgr8_to_jpeg(image)
 
     def get_widget_image(self):
