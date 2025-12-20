@@ -178,7 +178,10 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
                 self.mean_view = 0.0
                 self.mean_view_prev = 0.0
                 self.is_detected = False
-                self.cap_image = bgr8_to_jpeg(self.current_image)
+                self.cap_image = bgr8_to_jpeg(cv2.resize(self.current_image,
+                                                         (self.width_display, self.height_display),
+                                                         interpolation=cv2.INTER_LINEAR))
+                # self.cap_image = bgr8_to_jpeg(self.current_image)
                 return
             else:
                 self.no_detect -= 1  # observe for a duration for the miss of object detection
@@ -194,7 +197,11 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
             )
 
         # update image widget
-        self.cap_image = bgr8_to_jpeg(self.current_image)
+        self.cap_image = bgr8_to_jpeg(cv2.resize(self.current_image,
+                                                 (self.width_display, self.height_display),
+                                                 interpolation=cv2.INTER_LINEAR))
+        # self.cap_image = bgr8_to_jpeg(self.current_image)
+
         # print("ok!")
         # return self.cap_image
 
