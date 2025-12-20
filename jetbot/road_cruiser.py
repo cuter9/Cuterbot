@@ -187,7 +187,6 @@ class RoadCruiser(HasTraits):
                                                  (self.width_display, self.height_display),
                                                  interpolation=cv2.INTER_LINEAR))
 
-
         xy = self.cruiser_model_pth(self.preprocess_rc(image)).detach().float().cpu().numpy().flatten()
         x = xy[0]
         # y = (0.5 - xy[1]) / 2.0  # This is suitable for the image window without referring to the central line

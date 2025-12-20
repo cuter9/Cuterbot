@@ -28,7 +28,7 @@ def capture_frames(cam):
 
 class OpenCvGstCamera(CameraBase):
     value = traitlets.Any()
-    image_display = traitlets.Any()
+    widget_image = traitlets.Any()
 
     # config
     # width = traitlets.Integer(default_value=224).tag(config=True)
@@ -48,7 +48,7 @@ class OpenCvGstCamera(CameraBase):
 
     def __init__(self, *args, **kwargs):
         self.value = np.empty((self.height, self.width, 3), dtype=np.uint8)
-        # self.image_display = np.empty((self.height_display, self.width_display, 3), dtype=np.uint8)
+        self.widget_image = np.empty((self.height_display, self.width_display, 3), dtype=np.uint8).tobytes()
 
         self.stop_thread = threading.Event()
         super().__init__(self, *args, **kwargs)
@@ -141,8 +141,3 @@ class OpenCvGstCamera(CameraBase):
     @staticmethod
     def instance(*args, **kwargs):
         return OpenCvGstCamera(*args, **kwargs)
-
-    def save_image(self, image_path):
-        with open(image_path, 'wb') as f:
-            f.write(bgr8_to_jpeg(self.value))
-

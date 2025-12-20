@@ -18,7 +18,8 @@ class DataCollection(HasTraits):
         self.xy_image = np.empty((self.height_display, self.width_display, 3), dtype=np.uint8).tobytes()
 
     def get_xy_image(self, x_slider_value, y_slider_value):
-        image = np.copy(self.widget_image)
+        image = cv2.resize(self.camera.value, (self.width_display, self.height_display),
+                           interpolation=cv2.INTER_LINEAR)
         x = x_slider_value
         y = y_slider_value
         x = int(x * self.width_display / 2 + self.width_display / 2)
