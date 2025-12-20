@@ -48,9 +48,8 @@ class OpenCvGstCamera(CameraBase):
 
     def __init__(self, *args, **kwargs):
         self.value = np.empty((self.height, self.width, 3), dtype=np.uint8)
-        self.image_display = np.empty((self.height_display, self.width_display, 3), dtype=np.uint8)
+        # self.image_display = np.empty((self.height_display, self.width_display, 3), dtype=np.uint8)
 
-        # self.value = np.empty((self.capture_height, self.capture_width, 3), dtype=np.uint8)
         self.stop_thread = threading.Event()
         super().__init__(self, *args, **kwargs)
 
@@ -64,7 +63,7 @@ class OpenCvGstCamera(CameraBase):
                 raise RuntimeError('Could not read image from camera.')
 
             self.value = image
-            self.image_display = cv2.resize(image, (self.width_display, self.height_display), interpolation=cv2.INTER_LINEAR)
+            # self.image_display = cv2.resize(image, (self.width_display, self.height_display), interpolation=cv2.INTER_LINEAR)
 
             self.start()
 
@@ -84,7 +83,7 @@ class OpenCvGstCamera(CameraBase):
             re, image = self.cap.read()
             if re:
                 self.value = image
-                self.image_display = cv2.resize(image, (self.width_display, self.height_display), interpolation=cv2.INTER_LINEAR)
+                # self.image_display = cv2.resize(image, (self.width_display, self.height_display), interpolation=cv2.INTER_LINEAR)
 
                 # print(image)
             else:
