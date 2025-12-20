@@ -10,5 +10,6 @@ from .road_cruiser_trt import RoadCruiserTRT
 from .fleet_manager import Fleeter
 from .fleet_manager_trt import FleeterTRT
 from .tensorrt_model import *
+from .data_collection import DataCollection
 
 # from .object_detection_yolo import ObjectDetector_YOLO
