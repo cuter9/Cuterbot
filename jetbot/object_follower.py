@@ -88,7 +88,9 @@ class ObjectFollower(ObjectDetector):
             self.capturer = Camera()
             self.img_width = self.capturer.width
             self.img_height = self.capturer.height
-            self.cap_image = np.empty(shape=(self.img_height, self.img_width, 3), dtype=np.uint8).tobytes()
+            self.width_display = self.capturer.width_display
+            self.height_display = self.capturer.height_display
+            self.cap_image = np.empty(shape=(self.height_display, self.width_display, 3), dtype=np.uint8).tobytes()
             self.current_image = np.empty((self.img_height, self.img_width, 3))
 
         self.execution_time_of = []
@@ -150,13 +152,16 @@ class ObjectFollower(ObjectDetector):
 
         # print(image)
         # ** execute collision model to determine if blocked
-        # self.obstacle_detector.detect(self.current_image)
-        # self.blocked = self.obstacle_detector.prob_blocked
         # turn left if blocked
         if self.blocked > 0.5:
             #      # robot.left(0.3)
             self.robot.left(0.05)
-            self.cap_image = bgr8_to_jpeg(self.current_image)
+            # self.cap_image = bgr8_to_jpeg(self.current_image)
+            self.cap_image = bgr8_to_jpeg(cv2.resize(self.current_image,
+                                                     (self.width_display, self.height_display),
+                                                     interpolation=cv2.INTER_LINEAR))
+
+            # self.cap_image = bgr8_to_jpeg(self.capturer.image_display)
             return
 
         # compute all detected objects
@@ -173,14 +178,13 @@ class ObjectFollower(ObjectDetector):
             cv2.rectangle(self.current_image, (int(self.img_width * bbox[0]), int(self.img_height * bbox[1])),
                           (int(self.img_width * bbox[2]), int(self.img_height * bbox[3])), (255, 0, 0), 2)
 
-        # select detections that match selected class label
-
+        # select detections that match selected class label and
         # get detection closest to center of field of view and draw it
         cls_obj = self.closest_object
         if cls_obj is not None:
             bbox = cls_obj['bbox']
             cv2.rectangle(self.current_image, (int(self.img_width * bbox[0]), int(self.img_height * bbox[1])),
-                          (int(self.img_width * bbox[2]), int(self.img_height * bbox[3])), (0, 255, 0), 5)
+                           (int(self.img_width * bbox[2]), int(self.img_height * bbox[3])), (0, 255, 0), 5)
 
         # otherwise go forward if no target detected
         if cls_obj is None:
@@ -202,7 +206,9 @@ class ObjectFollower(ObjectDetector):
 
         # update image widget
         # image_widget.value = bgr8_to_jpeg(image)
-        self.cap_image = bgr8_to_jpeg(self.current_image)
+        self.cap_image = bgr8_to_jpeg(cv2.resize(self.current_image,
+                                                 (self.width_display, self.height_display),
+                                                 interpolation=cv2.INTER_LINEAR))
         # print("ok!")
         # return self.cap_image
 
