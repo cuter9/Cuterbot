@@ -31,8 +31,8 @@ class DataCollection(HasTraits):
                          (0, 255, 255), 2)
         self.xy_image = bgr8_to_jpeg(image)
 
-    def get_widget_image(self, value):
-        self.widget_image = bgr8_to_jpeg(cv2.resize(value, (self.width_display, self.height_display),
+    def get_widget_image(self):
+        self.widget_image = bgr8_to_jpeg(cv2.resize(self.camera.value, (self.width_display, self.height_display),
                                                     interpolation=cv2.INTER_LINEAR))
 
     def save_image(self, image_path):
