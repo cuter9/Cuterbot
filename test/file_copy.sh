@@ -12,6 +12,13 @@ nano /usr/local/lib/python3.6/dist-packages/jetbot/object_follower.py
 cp /workspace/Cuterbot_Demo/jetbot/__init__.py /usr/local/lib/python3.6/dist-packages/jetbot/
 nano /usr/local/lib/python3.6/dist-packages/jetbot/__init__.py
 
+cp /workspace/Cuterbot_Demo/jetbot/fleet_manager.py /usr/local/lib/python3.6/dist-packages/jetbot/
+nano /usr/local/lib/python3.6/dist-packages/jetbot/fleet_manager.py
+
+cp /workspace/Cuterbot_Demo/jetbot/fleet_manager_trt.py /usr/local/lib/python3.6/dist-packages/jetbot/
+nano /usr/local/lib/python3.6/dist-packages/jetbot/fleet_manager_trt.py
+
+
 
 
 
