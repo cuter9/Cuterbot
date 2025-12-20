@@ -90,7 +90,9 @@ class Fleeter(ObjectFollower, RoadCruiser):
             self.capturer = Camera()
             self.img_width = self.capturer.width
             self.img_height = self.capturer.height
-            self.cap_image = np.empty(shape=(self.img_height, self.img_width, 3), dtype=np.uint8).tobytes()
+            self.width_display = self.capturer.width_display
+            self.height_display = self.capturer.height_display
+            self.cap_image = np.empty(shape=(self.height_display, self.width_display, 3), dtype=np.uint8).tobytes()
             self.current_image = np.empty((self.img_height, self.img_width, 3))
 
         self.default_speed = self.speed_fm
