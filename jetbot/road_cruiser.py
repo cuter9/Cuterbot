@@ -1,14 +1,15 @@
 import time
 
 import PIL.Image
+import cv2
 
 import numpy as np
 import torch
 import torchvision
 import torchvision.transforms as transforms
 from traitlets import HasTraits, Float, Unicode
-
-from jetbot import Camera
+import traitlets
+from jetbot import Camera, bgr8_to_jpeg
 from jetbot import Robot
 from jetbot.utils.model_selection import load_tune_pth_model, tv_classifier_preprocess
 
@@ -26,6 +27,7 @@ class RoadCruiser(HasTraits):
     x_slider = Float(default_value=0).tag(config=True)
     y_slider = Float(default_value=0).tag(config=True)
     use_gpu = Unicode(default_value='gpu').tag(config=True)
+    cap_image = traitlets.Any()
 
     def __init__(self, init_sensor_rc=False):
         super().__init__()
@@ -38,6 +40,10 @@ class RoadCruiser(HasTraits):
         if init_sensor_rc:
             self.capturer = Camera()
             self.robot = Robot.instance()
+            self.width_display = self.capturer.width_display
+            self.height_display = self.capturer.height_display
+            self.cap_image = np.empty(shape=(self.height_display, self.width_display, 3), dtype=np.uint8).tobytes()
+
         # self.robot = Robot()
         self.angle = 0.0
         self.angle_last = 0.0
@@ -177,6 +183,11 @@ class RoadCruiser(HasTraits):
         start_time = time.time()
         # global angle, angle_last
         image = change['new']
+        self.cap_image = bgr8_to_jpeg(cv2.resize(image,
+                                                 (self.width_display, self.height_display),
+                                                 interpolation=cv2.INTER_LINEAR))
+
+
         xy = self.cruiser_model_pth(self.preprocess_rc(image)).detach().float().cpu().numpy().flatten()
         x = xy[0]
         # y = (0.5 - xy[1]) / 2.0  # This is suitable for the image window without referring to the central line

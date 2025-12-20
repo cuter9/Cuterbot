@@ -1,13 +1,15 @@
 import time
 import PIL.Image
+import cv2
 
 import numpy as np
 import torch
 import torchvision.transforms as transforms
+import traitlets
 from traitlets import HasTraits, Unicode, Float
 from torch2trt import TRTModule
 
-from jetbot import Camera
+from jetbot import Camera, bgr8_to_jpeg
 from jetbot import Robot
 
 from jetbot.utils.model_selection import tv_classifier_preprocess
@@ -25,6 +27,7 @@ class RoadCruiserTRT(HasTraits):
     steering_rc = Float(default_value=0.0).tag(config=True)
     x_slider = Float(default_value=0).tag(config=True)
     y_slider = Float(default_value=0).tag(config=True)
+    cap_image = traitlets.Any()
 
     def __init__(self, init_sensor_rc=False):
         super().__init__()
@@ -34,9 +37,13 @@ class RoadCruiserTRT(HasTraits):
 
         self.robot = None
         self.capturer = None
+
         if init_sensor_rc:
             self.capturer = Camera()
             self.robot = Robot.instance()
+            self.width_display = self.capturer.width_display
+            self.height_display = self.capturer.height_display
+            self.cap_image = np.empty(shape=(self.height_display, self.width_display, 3), dtype=np.uint8).tobytes()
 
         self.angle = 0.0
         self.angle_last = 0.0
@@ -101,6 +108,10 @@ class RoadCruiserTRT(HasTraits):
         start_time = time.time()
 
         image = change['new']
+        self.cap_image = bgr8_to_jpeg(cv2.resize(image,
+                                                 (self.width_display, self.height_display),
+                                                 interpolation=cv2.INTER_LINEAR))
+
         xy = self.trt_model_rc(self.preprocess_rc(image)).detach().float().cpu().numpy().flatten()
         x = xy[0]
         # y = (0.5 - xy[1]) / 2.0   # This is suitable for the image window without referring to central line
@@ -126,6 +137,7 @@ class RoadCruiserTRT(HasTraits):
         # self.execution_time.append(end_time - start_time + self.camera.cap_time)
         self.execution_time_rc.append(end_time - start_time)
         # self.fps.append(1/(end_time - start_time))
+
 
     # We accomplish that with the observe function.
     def start_rc(self, change):
