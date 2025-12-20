@@ -112,45 +112,11 @@ class RoadCruiser(HasTraits):
         # tv = int(torchvision.__version__.split(".")[1])  # torchvision version
         image = PIL.Image.fromarray(image)
 
-        '''
-        if tv >= 13:
-            preprocess = self.cruiser_model_preprocess[0]
-        else:
-            # load preprocess for loaded cruiser model
-            preprocess = tv_classifier_preprocess()
-            preprocess.load_state_dict(torch.load(self.cruiser_model_preprocess))
-        '''
-
         if self.use_gpu == 'gpu':
             image = self.preprocess(image).to(self.device).half()
         elif self.use_gpu == 'cpu':
             image = self.preprocess(image).to(self.device)
 
-        '''           
-        mean = None
-        std = None
-        if self.use_gpu == 'gpu':
-            mean = torch.Tensor([0.485, 0.456, 0.406]).to(self.device).half()
-            std = torch.Tensor([0.229, 0.224, 0.225]).to(self.device).half()
-        elif self.use_gpu == 'cpu':
-            mean = torch.Tensor([0.485, 0.456, 0.406]).to(self.device)
-            std = torch.Tensor([0.229, 0.224, 0.225]).to(self.device)
-        # mean = torch.Tensor([0.485, 0.456, 0.406]).cuda()
-        # std = torch.Tensor([0.229, 0.224, 0.225]).cuda()
-
-        # resize the cam captured image to (224, 224) for optimal resnet model inference
-        if self.type_cruiser_model == 'inception':
-            image = image.resize((299, 299))
-        else:
-            image = image.resize((224, 224))
-
-        if self.use_gpu == 'gpu':
-            image = transforms.functional.to_tensor(image).to(self.device).half()
-        elif self.use_gpu == 'cpu':
-            image = transforms.functional.to_tensor(image).to(self.device)
-
-        image.sub_(mean[:, None, None]).div_(std[:, None, None])
-        '''
         return image[None, ...]
 
     def preprocess_rc_1(self, image):

@@ -63,11 +63,6 @@ class RoadCruiserTRT(HasTraits):
     # 4. Add a batch dimension
     def load_road_cruiser(self, change):
 
-        """
-        self.cruiser_model = cruiser_model
-        self.type_cruiser_model = type_cruiser_model
-        """
-        # self.road_cruiser = None
         print('path of cruiser model: %s' % self.cruiser_model)
 
         if "workspace" in self.cruiser_model:
@@ -86,22 +81,6 @@ class RoadCruiserTRT(HasTraits):
     def preprocess_rc(self, image):
         image = PIL.Image.fromarray(image)
         image = self.preprocess(image).to(self.device).half()
-
-        '''
-        mean = torch.Tensor([0.485, 0.456, 0.406]).cuda().half()
-        std = torch.Tensor([0.229, 0.224, 0.225]).cuda().half()
-        # mean = torch.Tensor([0.485, 0.456, 0.406]).cuda()
-        # std = torch.Tensor([0.229, 0.224, 0.225]).cuda()
-
-        # resize the cam captured image to (224, 224) for optimal resnet model inference
-        if self.type_cruiser_model == 'InceptionNet':
-            image = image.resize((299, 299))
-        elif self.type_cruiser_model == 'ResNet':
-            image = image.resize((224, 224))
-        image = transforms.functional.to_tensor(image).to(self.device).half()
-        # image = transforms.functional.to_tensor(image).to(self.device)
-        image.sub_(mean[:, None, None]).div_(std[:, None, None])
-        '''
         return image[None, ...]
 
     def execute_rc(self, change):
