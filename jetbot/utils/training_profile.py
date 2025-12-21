@@ -82,7 +82,7 @@ def lt_plot(lt_epoch, lt_sample, overall_time, dir_training_records, train_model
                           time.strftime("%H:%M:%S", time.gmtime(ceil(overall_time))), overall_time),
                    fontsize=20, fontweight='medium')
     axh[0].set_ylabel('no. of epochs', fontdict=font)
-    axh[0].set_xlabel('time of training in an epoch, sec.', fontdict=font)
+    axh[0].set_xlabel('Mean time for training an epoch, sec.', fontdict=font)
     cf = 0.9 * min_lt_epoch
     cc = 1.1 * max_lt_epoch
     bins_epochs_time = np.arange(cf, cc, (cc - cf) / 30)
@@ -94,7 +94,7 @@ def lt_plot(lt_epoch, lt_sample, overall_time, dir_training_records, train_model
     axh[0].text(0.55, 0.85, text_str_0, transform=axh[0].transAxes, fontsize=10, verticalalignment='top', bbox=props)
 
     axh[1].set_ylabel('no. of batches', fontdict=font)
-    axh[1].set_xlabel('time for training a batch of samples , sec.', fontdict=font)
+    axh[1].set_xlabel('Mean time for training a batch sample in an epoch, sec.', fontdict=font)
     sf = 0.9 * min_lt_sample
     sc = 1.1 * max_lt_sample
     bins_samples_time = np.arange(sf, sc, (sc - sf) / 30)
