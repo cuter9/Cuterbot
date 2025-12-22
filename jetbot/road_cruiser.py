@@ -156,7 +156,7 @@ class RoadCruiser(HasTraits):
         xy = self.cruiser_model_pth(self.preprocess_rc(image)).detach().float().cpu().numpy().flatten()
         x = xy[0]
         # y = (0.5 - xy[1]) / 2.0  # This is suitable for the image window without referring to the central line
-        y = (1 - xy[1])     # This is suitable for the y data around 0, i.e., the central line in the image window
+        y = (1 - xy[1])     # range of y : 2(up) ~ 0(down). This is suitable for the y data around 0, i.e. the central line is at the middle of image
 
         self.x_slider = x.item()
         self.y_slider = y.item()
