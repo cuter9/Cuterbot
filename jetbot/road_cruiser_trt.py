@@ -92,9 +92,9 @@ class RoadCruiserTRT(HasTraits):
                                                  interpolation=cv2.INTER_LINEAR))
 
         xy = self.trt_model_rc(self.preprocess_rc(image)).detach().float().cpu().numpy().flatten()
-        x = xy[0]
+        x = xy[0]           #  the range of x: -1(left) ~ +1(right)
         # y = (0.5 - xy[1]) / 2.0   # This is suitable for the image window without referring to central line
-        y = (1 - xy[1])     # range of y: 2(up) ~ 0(down) , This is suitable for the y data around 0, i.e. the central line is at the middle of image
+        y = (1 - xy[1])     # the range of y: 2(up) ~ 0(down) , This is suitable for the y data around 0, i.e. the central line is at the middle of image
 
         self.x_slider = x.item()
         self.y_slider = y.item()
