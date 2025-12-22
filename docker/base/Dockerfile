@@ -43,25 +43,32 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # RUN pip3 install setuptools Cython wheel
-RUN apt-get install -y python3-pip
+RUN apt-get install -y python3-pip pkg-config
 RUN pip3 install pip -U   # upgrade pip for following installation of protobuf
-RUN pip3 install setuptools 'Cython<3.0' wheel
-RUN pip3 install 'numpy<1.19.0'
+RUN pip3 install setuptools wheel
 RUN pip3 install matplotlib pillow
 
-RUN pip3 install h5py==2.10.0
-# RUN pip3 install future==0.17.1 mock==3.0.5 keras_preprocessing==1.0.5 keras_applications==1.0.8 gast==0.3.3 futures protobuf pybind11
-RUN pip3 install future==0.17.1 mock==3.0.5 keras_preprocessing==1.0.5 keras_applications==1.0.8 gast==0.3.3 futures==2.2.0 protobuf pybind11
-# RUN pip3 install numpy
-
-# ARG TENSORFLOW_URL=https://nvidia.box.com/shared/static/rummpy6q1km1wivomalpkwt2jy28mndf.whl 
+# TF 1.15
+# ARG TENSORFLOW_URL=https://nvidia.box.com/shared/static/rummpy6q1km1wivomalpkwt2jy28mndf.whl
 # ARG TENSORFLOW_URL= https://developer.download.nvidia.com/compute/redist/jp/v461/tensorflow/tensorflow-1.15.5+nv22.1-cp36-cp36m-linux_aarch64.whl
 # ARG TENSORFLOW_WHL=tensorflow-1.15.2+nv-cp36-cp36m-linux_aarch64.whl
+# RUN pip3 install 'numpy<1.19.0'
+# RUN pip3 install 'Cython<3.0'
+# RUN pip3 install h5py==2.10.0
+# RUN pip3 install future==0.17.1 mock==3.0.5 keras_preprocessing==1.0.5 keras_applications==1.0.8 gast==0.3.3 futures protobuf pybind11
+# RUN pip3 install -- verbose future==0.17.1 mock==3.0.5 keras_preprocessing==1.0.5 keras_applications==1.0.8 gast==0.3.3 futures==2.2.0 pybind11
 
-RUN python3 -m pip install --pre --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v461 'tensorflow<2'
+# RUN python3 -m pip install --pre --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v461 'tensorflow<2'
 # RUN wget --quiet --show-progress ${TENSORFLOW_URL} -O ${TENSORFLOW_WHL} && \
  #   pip3 install ${TENSORFLOW_WHL} && \
  #   rm ${TENSORFLOW_WHL}
+
+# TF 2.7
+RUN ln -s /usr/include/locale.h /usr/include/xlocale.h
+RUN pip3 install --verbose 'protobuf<4' 'Cython<3'
+RUN wget --no-check-certificate https://developer.download.nvidia.com/compute/redist/jp/v461/tensorflow/tensorflow-2.7.0+nv22.1-cp36-cp36m-linux_aarch64.whl
+RUN pip3 install --verbose tensorflow-2.7.0+nv22.1-cp36-cp36m-linux_aarch64.whl
+RUN rm tensorflow-2.7.0+nv22.1-cp36-cp36m-linux_aarch64.whl
 
 
 # ==============
