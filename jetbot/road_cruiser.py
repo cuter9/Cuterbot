@@ -164,8 +164,8 @@ class RoadCruiser(HasTraits):
         self.speed_rc = self.speed_gain_rc
 
         # angle = np.sqrt(xy)*np.arctan2(x, y)
-        angle_1 = np.arctan2(x, y)
-        self.angle = 0.5 * np.pi * np.tanh(0.5 * angle_1)
+        angle_1 = np.arctan2(x, y)                              # -0.5*pi ~ 0.5*pi
+        self.angle = 0.5 * np.pi * np.tanh(0.5 * angle_1)       # -0.5*pi*0.22 ~ 0.5*pi*0.22
         pid = self.angle * self.steering_gain_rc + (self.angle - self.angle_last) * self.steering_dgain_rc
         self.angle_last = self.angle
 
