@@ -14,7 +14,7 @@ plt.close('all')
 fig_1, ax_1 = plt.subplots(figsize=(14, 6))
 
 font = {'fontweight': 'normal', 'fontsize': 16}
-font_title = {'fontweight': 'medium', 'fontsize': 20}
+font_title = {'fontweight': 'normal', 'fontsize': 20}
 
 
 # plot the training convergence profile
@@ -80,7 +80,7 @@ def lt_plot(lt_epoch, lt_sample, overall_time, dir_training_records, train_model
     fig_2.suptitle("Training Time Statistics ({:s} with {:s}) -- {:s} \n Overall training time : {:s} ({:.2f} sec.)".
                    format(train_method, processor, train_model,
                           time.strftime("%H:%M:%S", time.gmtime(ceil(overall_time))), overall_time),
-                   fontsize=20, fontweight='medium')
+                   fontsize=20, fontweight='normal')
     axh[0].set_ylabel('no. of epochs', fontdict=font)
     axh[0].set_xlabel('Mean time for training an epoch, sec.', fontdict=font)
     cf = 0.9 * min_lt_epoch
