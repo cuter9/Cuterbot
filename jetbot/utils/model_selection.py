@@ -117,6 +117,18 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
     elif 'mobilenet_v3' in pth_model_name:  # 'mobilenet_v3_large' or  'mobilenet_v3_small'
         model_type = "MobileNet"
         # add code here to convert pytorch 'mobilenet_v3' model so that can be used in Jetbot application.
+        if tv >= 13:  # use weights parameter for torchvision with version > 13
+            print("torchvision version: %d" % tv)
+            if "small" in pth_model_name:
+                weights_cls = "MobileNet_V3_Small_Weights"
+            elif "large" in pth_model_name:
+                weights_cls = "MobileNet_V3_Large_Weights"
+            else:
+                assert weights_cls is not None, "Check the use of the name of the torch model!"
+
+        model, preprocess_wrap = load_pth_model(pth_model_name, weights_cls, pretrained)
+        model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features,
+                                              2)  # for mobilenet_v3 model. must add block expansion factor 4
 
     elif pth_model_name == 'mobilenet_v2':      # mobilenet_v2
         model_type = "MobileNet"
