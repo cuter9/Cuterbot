@@ -41,10 +41,8 @@ def plot_loss(loss_data, best_loss, no_epoch,
 
     fig_1.canvas.draw()
     fig_1.canvas.flush_events()
-    if show_training_plot and len(loss_data) < no_epoch:
+    if show_training_plot:
         plt.show(block=False)
-    else:
-        plt.show()
     if len(loss_data) >= no_epoch:
         profile_plot = os.path.join(dir_training_records,
                                     "Training_convergence_plot_Model_{:s}_Training_Method_{:s})".
