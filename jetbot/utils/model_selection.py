@@ -153,7 +153,16 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
         model_type = "EfficientNet"
         if tv >= 13:  # use weights parameter for torchvision with version > 13
             print("torchvision version: %d" % tv)
-            weights_cls = pth_model_name.replace("efficientnet_b", "EfficientNet_B") + "_Weights"
+            if 'efficientnet_b' in pth_model_name:
+                weights_cls = pth_model_name.replace("efficientnet_b", "EfficientNet_B") + "_Weights"
+            elif 'efficientnet_v2_s' in pth_model_name:
+                weights_cls = pth_model_name.replace("efficientnet_v2_s", "EfficientNet_V2_S") + "_Weights"
+            elif 'efficientnet_v2_m' in pth_model_name:
+                weights_cls = pth_model_name.replace("efficientnet_v2_m", "EfficientNet_V2_M") + "_Weights"
+            elif 'efficientnet_v2_l' in pth_model_name:
+                weights_cls = pth_model_name.replace("efficientnet_v2_s", "EfficientNet_V2_L") + "_Weights"
+            else:
+                raise ValueError(f"Unsupported model type {pth_model_name}")
 
         model, preprocess_wrap = load_pth_model(pth_model_name, weights_cls, pretrained)
         model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)  # for efficientnet model
