@@ -160,7 +160,7 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
             elif 'efficientnet_v2_m' in pth_model_name:
                 weights_cls = pth_model_name.replace("efficientnet_v2_m", "EfficientNet_V2_M") + "_Weights"
             elif 'efficientnet_v2_l' in pth_model_name:
-                weights_cls = pth_model_name.replace("efficientnet_v2_s", "EfficientNet_V2_L") + "_Weights"
+                weights_cls = pth_model_name.replace("efficientnet_v2_l", "EfficientNet_V2_L") + "_Weights"
             else:
                 raise ValueError(f"Unsupported model type {pth_model_name}")
 
