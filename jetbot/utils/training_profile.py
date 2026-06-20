@@ -16,7 +16,6 @@ fig_1, ax_1 = plt.subplots(figsize=(14, 6))
 font = {'fontweight': 'normal', 'fontsize': 16}
 font_title = {'fontweight': 'normal', 'fontsize': 20}
 
-
 # plot the training convergence profile
 def plot_loss(loss_data, best_loss, no_epoch,
               dir_training_records, train_model, train_method, processor,
