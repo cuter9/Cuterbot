@@ -2,13 +2,6 @@
 <project version="4">
   <component name="PublishConfigData" autoUpload="Always" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
-      <paths name="cuterbot@10.56.121.117:22 password">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
       <paths name="cuterbot@192.168.1.102:22 password">
         <serverdata>
           <mappings>
@@ -30,56 +23,7 @@
           </mappings>
         </serverdata>
       </paths>
-      <paths name="cuterbot@192.168.1.105:22 password">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/home/cuterbot/Cuterbot_Demo" local="$PROJECT_DIR$" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="cuterbot@192.168.1.106:22 password">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="cuterbot@192.168.1.110:22 password">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/home/cuterbot/Cuterbot_Demo" local="$PROJECT_DIR$" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="cuterbot@192.168.1.113:22 password">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="cuterbot@192.168.1.16:22 password">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="cuterbot@192.168.10.195:22 password">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="cuterbot@192.168.14.195:22 password">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="cuterbot@192.168.55.1:22 password">
+      <paths name="cuterbot@192.168.1.115:22 password">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />
