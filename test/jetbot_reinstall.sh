@@ -3,7 +3,7 @@
 # shellcheck disable=SC2164
 cd ~
 rm -r /opt/jetbot
-cp -r /workspace/Cuterbot_Demo /opt/jetbot
+cp -r /workspace/Cuterbot /opt/jetbot
 # shellcheck disable=SC2164
 cd /opt/jetbot
 python3 setup.py bdist_wheel
