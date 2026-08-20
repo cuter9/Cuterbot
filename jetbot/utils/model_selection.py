@@ -1,5 +1,9 @@
 import pandas as pd
 import os
+
+from sympy import true
+from timm.data import str_to_interp_mode
+
 from traitlets import HasTraits, Unicode, List, Bool
 # import numpy as np
 from typing import Optional, Tuple
@@ -9,6 +13,8 @@ from torch import Tensor
 import torchvision
 import torchvision.models as pth_models
 from torchvision.transforms import functional as F, InterpolationMode
+import timm
+from timm.layers import Linear
 
 HEAD_LIST = ['model_function', 'model_type', 'model_path', 'preprocess_path']
 # MODEL_REPO_DIR = os.path.join(os.environ["HOME"], "model_repo")
@@ -43,6 +49,9 @@ class tv_classifier_preprocess(torch.nn.Module):
         self.tv_tv_weights = tv_weights
 
     def forward(self, img: Tensor) -> Tensor:
+        # ref: https://github.com/pytorch/vision/blob/main/torchvision/transforms/_presets.py#L39
+        # ImageClassification of torchvision is intentionally used for to preprocess image when validating and evaluating
+        # use RandomResizedCrop instaed of F.center_crop when training
         img = F.resize(img, self.resize_size, interpolation=self.interpolation, antialias=self.antialias)
         img = F.center_crop(img, self.crop_size)
         if not isinstance(img, Tensor):
@@ -50,7 +59,6 @@ class tv_classifier_preprocess(torch.nn.Module):
         img = F.convert_image_dtype(img, torch.float)
         img = F.normalize(img, mean=self.mean, std=self.std)
         return img
-
 
 def load_pth_model(pth_model_name, weights_cls, pretrained):
     preprocess_wrap = None
@@ -94,9 +102,59 @@ def load_pth_model(pth_model_name, weights_cls, pretrained):
 
     return model, preprocess_wrap
 
+class timm_classifier_preprocess(torch.nn.Module):
+    def __init__(
+            self,
+            *,
+            model_config = None,
+            crop_size: int = 224,
+            resize_size: int = 256,
+            mean: Tuple[float, ...] = (0.485, 0.456, 0.406),
+            std: Tuple[float, ...] = (0.229, 0.224, 0.225),
+            interpolation: InterpolationMode = InterpolationMode.BILINEAR,
+            antialias: Optional[bool] = True,
+            tv_version=None,
+            tv_weights=None,
+
+    ) -> None:
+        super().__init__()
+        if model_config is not None:
+            self.crop_pct = model_config.crop_pct
+            self.crop_size = model_config.input_size[1:]
+            self.resize_size = tuple((torch.asarray(self.crop_size, dtype=float) / self.crop_pct).int().tolist())
+            self.mean = model_config.mean
+            self.std = model_config.std
+            self.interpolation = str_to_interp_mode(model_config.interpolation)
+        else:
+            self.crop_size = [crop_size]
+            self.resize_size = [resize_size]
+            self.mean = list(mean)
+            self.std = list(std)
+            self.interpolation = interpolation
+        self.antialias = antialias
+        self.tv_version = tv_version
+        self.tv_tv_weights = tv_weights
+
+    def forward(self, img: Tensor) -> Tensor:
+        img = F.resize(img, self.resize_size, interpolation=self.interpolation, antialias=self.antialias)
+        img = F.center_crop(img, self.crop_size)
+        if not isinstance(img, Tensor):
+            img = F.pil_to_tensor(img)
+        img = F.convert_image_dtype(img, torch.float)
+        img = F.normalize(img, mean=self.mean, std=self.std)
+        return img
+
+def load_timm_pth_model(timm_model_name, model_config, pretrained=True):
+    # model_config = timm.models.mobilenetv3.default_cfgs[timm_model_name].default_with_tag
+    model = timm.create_model(timm_model_name+"."+model_config[0], pretrained=pretrained)
+    classifier_preprocess = timm_classifier_preprocess(model_config=model_config[1])
+    preprocess_wrap = [classifier_preprocess, classifier_preprocess]
+    # for p in self.backbone.parameters(): p.requires_grad = False
+    # num_features = self.backbone.feature_info[-1]['num_chs']
+
+    return model, preprocess_wrap
 
 def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
-
     preprocess_wrap = None
     model_type = None
     model = None
@@ -128,7 +186,26 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
         model, preprocess_wrap = load_pth_model(pth_model_name, weights_cls, pretrained)
         model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features,
                                               2)  # for mobilenet_v3 model. must add block expansion factor 4
+    elif "mobilenetv4" in pth_model_name:
+        model_type = "MobileNet"
+        # mobilenetv4 is included in timm.models.mobilenetv3
+        # ref https://github.com/huggingface/pytorch-image-models/blob/main/timm/models/mobilenetv3.py
+        # mobilenetv4_conv_small.e2400_r224_in1k; mobilenetv4_conv_medium.e500_r224_in1k; mobilenetv4_conv_large.e500_r256_in1k
+        # model = timm.create_model('mobilenetv4_conv_small', pretrained=pretrained, features_only=True)
+        timm_model_name = "mobilenetv4_conv_small"
+        if "small" in pth_model_name:
+            timm_model_name="mobilenetv4_conv_small"
+        elif "medium" in pth_model_name:
+            timm_model_name="mobilenetv4_conv_medium"
+        elif "large" in pth_model_name:
+            timm_model_name="mobilenetv4_conv_large"
 
+        model_config = timm.models.mobilenetv3.default_cfgs[timm_model_name].default_with_tag
+        model, preprocess_wrap = load_timm_pth_model(timm_model_name, model_config, pretrained)
+        dd = {'device':None , 'dtype': None}
+        model.classifier = Linear(model.head_hidden_size, 2, **dd)
+
+    # for mobilenet_v2 model. must add block expansion factor 4
     elif pth_model_name == 'mobilenet_v2':
         model_type = "MobileNet"
         if tv >= 13:  # use weights parameter for torchvision with version > 13

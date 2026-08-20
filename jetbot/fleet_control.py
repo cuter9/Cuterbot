@@ -116,20 +116,24 @@ class GenericDetectionMultiTaskNet(nn.Module):
 
         if backbone_type == "mobilenetv4":
             self.backbone = timm.create_model('mobilenetv4_conv_small', pretrained=True, features_only=True)
-            for p in self.backbone.parameters(): p.requires_grad = False
+            for p in self.backbone.parameters():
+                p.requires_grad = False
             num_features = self.backbone.feature_info[-1]['num_chs']
         elif backbone_type == "ssdlite_v3":
             weights = detection.SSDLite320_MobileNet_V3_Large_Weights.DEFAULT
             self.backbone = detection.ssdlite320_mobilenet_v3_large(weights=weights).backbone
-            for p in self.backbone.parameters(): p.requires_grad = False
+            for p in self.backbone.parameters():
+                p.requires_grad = False
             num_features = 960
         elif backbone_type == "efficientdet":
             self.backbone = timm.create_model('efficientnet_b0', pretrained=True, features_only=True)
-            for p in self.backbone.parameters(): p.requires_grad = False
+            for p in self.backbone.parameters():
+                p.requires_grad = False
             num_features = self.backbone.feature_info[-1]['num_chs']
         elif backbone_type == "mobilevit":
             self.backbone = timm.create_model('mobilevit_xxs', pretrained=True)
-            for p in self.backbone.parameters(): p.requires_grad = False
+            for p in self.backbone.parameters():
+                p.requires_grad = False
             num_features = self.backbone.num_features
 
         self.detect_neck = nn.Sequential(
