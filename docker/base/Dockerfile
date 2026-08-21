@@ -70,7 +70,6 @@ RUN wget --no-check-certificate https://developer.download.nvidia.com/compute/re
 RUN pip3 install --verbose tensorflow-2.7.0+nv22.1-cp36-cp36m-linux_aarch64.whl
 RUN rm tensorflow-2.7.0+nv22.1-cp36-cp36m-linux_aarch64.whl
 
-
 # ==============
 # INSTALL OPENCV
 # ==============
@@ -137,7 +136,6 @@ RUN cd && \
 RUN apt-get update && apt-get install -y supervisor unzip
 RUN apt install -y python3-smbus && pip3 install pyzmq
 
-
 # =================
 # INSTALL TORCH2TRT
 # =================
@@ -160,7 +158,6 @@ RUN pip3 install 'sparkfun-qwiic-i2c<1.0.0'
 # RUN cd ${QWIIC_DIR} && python3 setup.py bdist_wheel && cd dist && pip3 install *.whl && \
 #    cd ${QWIIC_I2C_DIR} && python3 setup.py bdist_wheel && cd dist && pip3 install *.whl && \
 #    cd /opt && rm -rf Qwiic_Py
-
 
 # ==============
 # INSTALL JETBOT

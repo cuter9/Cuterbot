@@ -95,8 +95,8 @@ class tv_classifier_preprocess():
         self.tv_version = tv_version
         self.tv_tv_weights = tv_weights
 
-        if pretrained:
-            self.transform = tf.Compose([tf.RandomHorizontalFlip(p = 0.5),
+
+        self.transform_train = tf.Compose([tf.RandomHorizontalFlip(p = 0.5),
                                          tf.ColorJitter(0.3, 0.3, 0.3, 0.3),
                                          tf.Resize(self.resize_size,
                                                    interpolation=self.interpolation,
@@ -106,8 +106,8 @@ class tv_classifier_preprocess():
                                          tf.ConvertImageDtype(torch.float),
                                          tf.Normalize(mean=self.mean, std=self.std)
                                          ])
-        else:
-            self.transform = tf.Compose([tf.Resize(self.crop_size,
+
+        self.transform_val = tf.Compose([tf.Resize(self.crop_size,
                                                    interpolation=self.interpolation,
                                                    antialias=self.antialias),
                                          tf.PILToTensor(),
@@ -115,7 +115,7 @@ class tv_classifier_preprocess():
                                          tf.Normalize(mean=self.mean, std=self.std)
                                          ])
 
-    def __call__(self, img, offset=None):
+    def __call__(self, img, offset=None, pretrained=True):
         # x = offset[0]; y = offset[1]
         h, w = img.size
         if offset is None:
@@ -128,13 +128,13 @@ class tv_classifier_preprocess():
                                              )
             input_data = {"img": img,
                           "poins_of_interest": offset_kp,}
-            output_data = self.transform(input_data)
+            output_data = self.transform_train(input_data)
             img_tf = output_data["img"]
             offset_tf = (output_data["poins_of_interest"][0] - 0.5 * torch.asarray(self.crop_size) ) / (0.5 * torch.asarray(self.crop_size))
             return img_tf, offset_tf
         else:
             input_data = {"img": img,}
-            output_data = self.transform(input_data)
+            output_data = self.transform_val(input_data)
             img_tf = output_data["img"]
             return img_tf
 
