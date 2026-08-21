@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 
+from PIL.Image import Transform
 from sympy import true
 from timm.data import str_to_interp_mode
 
@@ -12,7 +13,9 @@ import torch
 from torch import Tensor
 import torchvision
 import torchvision.models as pth_models
-from torchvision.transforms import functional as F, InterpolationMode
+from torchvision.transforms.v2 import functional as F, InterpolationMode
+import torchvision.transforms.v2 as tf
+from torchvision import tv_tensors
 import timm
 from timm.layers import Linear
 
@@ -24,7 +27,7 @@ os.environ['MODEL_REPO_DIR_DOCKER'] = MODEL_REPO_DIR_DOCKER
 os.environ['MODEL_REPO_DIR'] = MODEL_REPO_DIR
 
 
-class tv_classifier_preprocess(torch.nn.Module):
+class tv_classifier_preprocess_0(torch.nn.Module):
     # import weights transform function from torchvision v0.19
     def __init__(
             self,
@@ -35,7 +38,7 @@ class tv_classifier_preprocess(torch.nn.Module):
             std: Tuple[float, ...] = (0.229, 0.224, 0.225),
             interpolation: InterpolationMode = InterpolationMode.BILINEAR,
             antialias: Optional[bool] = True,
-            tv_version=None,
+            tv_version=tv_tensors,
             tv_weights=None,
     ) -> None:
         super().__init__()
@@ -60,6 +63,81 @@ class tv_classifier_preprocess(torch.nn.Module):
         img = F.normalize(img, mean=self.mean, std=self.std)
         return img
 
+class tv_classifier_preprocess():
+    def __init__(
+            self,
+            *,
+            crop_size=None,
+            resize_size=None,
+            mean: Tuple[float, ...] = (0.485, 0.456, 0.406),
+            std: Tuple[float, ...] = (0.229, 0.224, 0.225),
+            interpolation: InterpolationMode = InterpolationMode.BILINEAR,
+            antialias: Optional[bool] = True,
+            tv_version=None,
+            tv_weights=None,
+            pretrained=True,
+
+    ) -> None:
+        # super().__init__()
+        self.pretrained = pretrained
+        if resize_size is None:
+            self.resize_size = [256, 256]
+        else:
+            self.resize_size = [resize_size[0], resize_size[0]]
+        if crop_size is None:
+            self.crop_size = [224, 224]
+        else:
+            self.crop_size = [crop_size[0], crop_size[0]]
+        self.mean = list(mean)
+        self.std = list(std)
+        self.interpolation = interpolation
+        self.antialias = antialias
+        self.tv_version = tv_version
+        self.tv_tv_weights = tv_weights
+
+        if pretrained:
+            self.transform = tf.Compose([tf.RandomHorizontalFlip(p = 0.5),
+                                         tf.ColorJitter(0.3, 0.3, 0.3, 0.3),
+                                         tf.Resize(self.resize_size,
+                                                   interpolation=self.interpolation,
+                                                   antialias=self.antialias),
+                                         tf.RandomCrop(self.crop_size),
+                                         tf.PILToTensor(),
+                                         tf.ConvertImageDtype(torch.float),
+                                         tf.Normalize(mean=self.mean, std=self.std)
+                                         ])
+        else:
+            self.transform = tf.Compose([tf.Resize(self.crop_size,
+                                                   interpolation=self.interpolation,
+                                                   antialias=self.antialias),
+                                         tf.PILToTensor(),
+                                         tf.ConvertImageDtype(torch.float),
+                                         tf.Normalize(mean=self.mean, std=self.std)
+                                         ])
+
+    def __call__(self, img, offset=None):
+        # x = offset[0]; y = offset[1]
+        h, w = img.size
+        if offset is None:
+            offset_in = [[0.5, 0.5]]
+        else:
+            offset_in = [[0.5 * h * (offset[0] + 1) , 0.5 * w * (offset[1] + 1)]]
+        if self.pretrained:
+            offset_kp = tv_tensors.KeyPoints(data=offset_in,
+                                             canvas_size=(h, w)
+                                             )
+            input_data = {"img": img,
+                          "poins_of_interest": offset_kp,}
+            output_data = self.transform(input_data)
+            img_tf = output_data["img"]
+            offset_tf = (output_data["poins_of_interest"][0] - 0.5 * torch.asarray(self.crop_size) ) / (0.5 * torch.asarray(self.crop_size))
+            return img_tf, offset_tf
+        else:
+            input_data = {"img": img,}
+            output_data = self.transform(input_data)
+            img_tf = output_data["img"]
+            return img_tf
+
 def load_pth_model(pth_model_name, weights_cls, pretrained):
     preprocess_wrap = None
 
@@ -75,9 +153,11 @@ def load_pth_model(pth_model_name, weights_cls, pretrained):
                                                              interpolation=preprocess.interpolation,
                                                              antialias=preprocess.antialias,
                                                              tv_version=torchvision.__version__,
-                                                             tv_weights=weights_cls
+                                                             tv_weights=weights_cls,
+                                                             pretrained=pretrained
                                                              )
-            preprocess_wrap = [preprocess, classifier_preprocess]
+            #preprocess_wrap = [preprocess, classifier_preprocess]
+            preprocess_wrap = [classifier_preprocess, classifier_preprocess]
         except AttributeError as err:
             print("Attribute Error - %s \n" % err, ', Check weights class ( %s ) is correct or not!' % weights_cls)
 
@@ -102,7 +182,8 @@ def load_pth_model(pth_model_name, weights_cls, pretrained):
 
     return model, preprocess_wrap
 
-class timm_classifier_preprocess(torch.nn.Module):
+# class timm_classifier_preprocess(torch.nn.Module):
+class timm_classifier_preprocess():
     def __init__(
             self,
             *,
@@ -115,16 +196,18 @@ class timm_classifier_preprocess(torch.nn.Module):
             antialias: Optional[bool] = True,
             tv_version=None,
             tv_weights=None,
+            pretrained=True,
 
     ) -> None:
-        super().__init__()
+        # super().__init__()
+        self.pretrained = pretrained
         if model_config is not None:
-            self.crop_pct = model_config.crop_pct
-            self.crop_size = model_config.input_size[1:]
+            self.crop_pct = model_config['crop_pct']
+            self.crop_size = model_config['input_size'][1:]
             self.resize_size = tuple((torch.asarray(self.crop_size, dtype=float) / self.crop_pct).int().tolist())
-            self.mean = model_config.mean
-            self.std = model_config.std
-            self.interpolation = str_to_interp_mode(model_config.interpolation)
+            self.mean = model_config['mean']
+            self.std = model_config['std']
+            self.interpolation = str_to_interp_mode(model_config['interpolation'])
         else:
             self.crop_size = [crop_size]
             self.resize_size = [resize_size]
@@ -132,22 +215,55 @@ class timm_classifier_preprocess(torch.nn.Module):
             self.std = list(std)
             self.interpolation = interpolation
         self.antialias = antialias
+        if pretrained:
+            self.transform = tf.Compose([tf.RandomHorizontalFlip(p = 0.5),
+                                         tf.ColorJitter(0.3, 0.3, 0.3, 0.3),
+                                         tf.Resize(self.resize_size,
+                                                   interpolation=self.interpolation,
+                                                   antialias=self.antialias),
+                                         tf.RandomCrop(self.crop_size),
+                                         tf.PILToTensor(),
+                                         tf.ConvertImageDtype(torch.float),
+                                         tf.Normalize(mean=self.mean, std=self.std)
+                                         ])
+        else:
+            self.transform = tf.Compose([tf.Resize(self.crop_size,
+                                                   interpolation=self.interpolation,
+                                                   antialias=self.antialias),
+                                         tf.PILToTensor(),
+                                         tf.ConvertImageDtype(torch.float),
+                                         tf.Normalize(mean=self.mean, std=self.std)
+                                         ])
         self.tv_version = tv_version
         self.tv_tv_weights = tv_weights
 
-    def forward(self, img: Tensor) -> Tensor:
-        img = F.resize(img, self.resize_size, interpolation=self.interpolation, antialias=self.antialias)
-        img = F.center_crop(img, self.crop_size)
-        if not isinstance(img, Tensor):
-            img = F.pil_to_tensor(img)
-        img = F.convert_image_dtype(img, torch.float)
-        img = F.normalize(img, mean=self.mean, std=self.std)
-        return img
+    def __call__(self, img, offset=None):
+        # x = offset[0]; y = offset[1]
+        h, w = img.size
+        if offset is None:
+            offset_in = [[0.5, 0.5]]
+        else:
+            offset_in = [[0.5 * h * (offset[0] + 1) , 0.5 * w * (offset[1] + 1)]]
+        if self.pretrained:
+            offset_kp = tv_tensors.KeyPoints(data=offset_in,
+                                             canvas_size=(h, w)
+                                             )
+            input_data = {"img": img,
+                          "poins_of_interest": offset_kp,}
+            output_data = self.transform(input_data)
+            img_tf = output_data["img"]
+            offset_tf = (output_data["poins_of_interest"][0] - 0.5 * torch.asarray(self.crop_size) ) / (0.5 * torch.asarray(self.crop_size))
+            return img_tf, offset_tf
+        else:
+            input_data = {"img": img,}
+            output_data = self.transform(input_data)
+            img_tf = output_data["img"]
+            return img_tf
 
 def load_timm_pth_model(timm_model_name, model_config, pretrained=True):
     # model_config = timm.models.mobilenetv3.default_cfgs[timm_model_name].default_with_tag
-    model = timm.create_model(timm_model_name+"."+model_config[0], pretrained=pretrained)
-    classifier_preprocess = timm_classifier_preprocess(model_config=model_config[1])
+    model = timm.create_model(timm_model_name, pretrained=pretrained)
+    classifier_preprocess = timm_classifier_preprocess(model_config=model.pretrained_cfg, pretrained=pretrained)
     preprocess_wrap = [classifier_preprocess, classifier_preprocess]
     # for p in self.backbone.parameters(): p.requires_grad = False
     # num_features = self.backbone.feature_info[-1]['num_chs']
@@ -200,8 +316,8 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
         elif "large" in pth_model_name:
             timm_model_name="mobilenetv4_conv_large"
 
-        model_config = timm.models.mobilenetv3.default_cfgs[timm_model_name].default_with_tag
-        model, preprocess_wrap = load_timm_pth_model(timm_model_name, model_config, pretrained)
+        # model_config = timm.models.mobilenetv3.default_cfgs[timm_model_name].default_with_tag
+        model, preprocess_wrap = load_timm_pth_model(timm_model_name, pretrained)
         dd = {'device':None , 'dtype': None}
         model.classifier = Linear(model.head_hidden_size, 2, **dd)
 

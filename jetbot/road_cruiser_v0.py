@@ -57,8 +57,8 @@ class RoadCruiser(HasTraits):
 
     def load_road_cruiser(self, change):
         # The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
-        # self.cruiser_model_pth = None
-        # self.cruiser_model_type_pth = None
+        self.cruiser_model_pth = None
+        self.cruiser_model_type_pth = None
 
         pth_model_name = self.cruiser_model.split('/')[-1].split('.')[0].split('_', 4)[-1].split('-')[0]
         print('pytorch model name: %s' % pth_model_name)
@@ -72,12 +72,12 @@ class RoadCruiser(HasTraits):
         self.cruiser_model_pth.load_state_dict(torch.load(self.cruiser_model))
 
         # load preprocess for loaded cruiser model
-        # if self.cruiser_model_preprocess_pth is None:  # load pre-stored preprocess module of the trained model
-        #    self.preprocess = tv_classifier_preprocess()
-        #    # use weights_only=True, ref: https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models
-        #    self.preprocess.load_state_dict(torch.load(self.cruiser_model_preprocess))
-        #else:  # used the preprocess from load_tune_pth_model
-        self.preprocess = self.cruiser_model_preprocess_pth[0]
+        if self.cruiser_model_preprocess_pth is None:  # load pre-stored preprocess module of the trained model
+            self.preprocess = tv_classifier_preprocess()
+            # use weights_only=True, ref: https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models
+            self.preprocess.load_state_dict(torch.load(self.cruiser_model_preprocess))
+        else:  # used the preprocess from load_tune_pth_model
+            self.preprocess = self.cruiser_model_preprocess_pth[0]
 
         if self.use_gpu == 'gpu':
             print("torch cuda version : ", torch.version.cuda)
