@@ -115,14 +115,16 @@ class tv_classifier_preprocess():
                                          tf.Normalize(mean=self.mean, std=self.std)
                                          ])
 
-    def __call__(self, img, offset=None, pretrained=True):
+    def __call__(self, img, offset=None, is_traing=True):
         # x = offset[0]; y = offset[1]
+        # self.pretrained = pretrained
         h, w = img.size
         if offset is None:
             offset_in = [[0.5, 0.5]]
         else:
             offset_in = [[0.5 * h * (offset[0] + 1) , 0.5 * w * (offset[1] + 1)]]
-        if self.pretrained:
+
+        if is_traing:
             offset_kp = tv_tensors.KeyPoints(data=offset_in,
                                              canvas_size=(h, w)
                                              )
@@ -133,10 +135,22 @@ class tv_classifier_preprocess():
             offset_tf = (output_data["poins_of_interest"][0] - 0.5 * torch.asarray(self.crop_size) ) / (0.5 * torch.asarray(self.crop_size))
             return img_tf, offset_tf
         else:
-            input_data = {"img": img,}
-            output_data = self.transform_val(input_data)
-            img_tf = output_data["img"]
-            return img_tf
+            if offset is None:
+                input_data = {"img": img,}
+                output_data = self.transform_val(input_data)
+                img_tf = output_data["img"]
+                return img_tf
+            else:
+                offset_kp = tv_tensors.KeyPoints(data=offset_in,
+                                                 canvas_size=(h, w)
+                                                 )
+                input_data = {"img": img,
+                              "poins_of_interest": offset_kp,}
+                output_data = self.transform_val(input_data)
+                img_tf = output_data["img"]
+                offset_tf = (output_data["poins_of_interest"][0] - 0.5 * torch.asarray(self.crop_size)) / (
+                            0.5 * torch.asarray(self.crop_size))
+                return img_tf, offset_tf
 
 def load_pth_model(pth_model_name, weights_cls, pretrained):
     preprocess_wrap = None
@@ -215,8 +229,8 @@ class timm_classifier_preprocess():
             self.std = list(std)
             self.interpolation = interpolation
         self.antialias = antialias
-        if pretrained:
-            self.transform = tf.Compose([tf.RandomHorizontalFlip(p = 0.5),
+
+        self.transform_train = tf.Compose([tf.RandomHorizontalFlip(p = 0.5),
                                          tf.ColorJitter(0.3, 0.3, 0.3, 0.3),
                                          tf.Resize(self.resize_size,
                                                    interpolation=self.interpolation,
@@ -226,8 +240,7 @@ class timm_classifier_preprocess():
                                          tf.ConvertImageDtype(torch.float),
                                          tf.Normalize(mean=self.mean, std=self.std)
                                          ])
-        else:
-            self.transform = tf.Compose([tf.Resize(self.crop_size,
+        self.transform_val = tf.Compose([tf.Resize(self.crop_size,
                                                    interpolation=self.interpolation,
                                                    antialias=self.antialias),
                                          tf.PILToTensor(),
@@ -237,28 +250,42 @@ class timm_classifier_preprocess():
         self.tv_version = tv_version
         self.tv_tv_weights = tv_weights
 
-    def __call__(self, img, offset=None):
+    def __call__(self, img, offset=None, is_train=True):
         # x = offset[0]; y = offset[1]
+
         h, w = img.size
         if offset is None:
             offset_in = [[0.5, 0.5]]
         else:
             offset_in = [[0.5 * h * (offset[0] + 1) , 0.5 * w * (offset[1] + 1)]]
-        if self.pretrained:
+        if is_train:
             offset_kp = tv_tensors.KeyPoints(data=offset_in,
                                              canvas_size=(h, w)
                                              )
             input_data = {"img": img,
                           "poins_of_interest": offset_kp,}
-            output_data = self.transform(input_data)
+            output_data = self.transform_train(input_data)
             img_tf = output_data["img"]
             offset_tf = (output_data["poins_of_interest"][0] - 0.5 * torch.asarray(self.crop_size) ) / (0.5 * torch.asarray(self.crop_size))
             return img_tf, offset_tf
         else:
-            input_data = {"img": img,}
-            output_data = self.transform(input_data)
-            img_tf = output_data["img"]
-            return img_tf
+            if offset is None:
+                input_data = {"img": img,}
+                output_data = self.transform_val(input_data)
+                img_tf = output_data["img"]
+                return img_tf
+            else:
+                offset_kp = tv_tensors.KeyPoints(data=offset_in,
+                                                 canvas_size=(h, w)
+                                                 )
+                input_data = {"img": img,
+                              "poins_of_interest": offset_kp, }
+                output_data = self.transform_val(input_data)
+                img_tf = output_data["img"]
+                offset_tf = (output_data["poins_of_interest"][0] - 0.5 * torch.asarray(self.crop_size)) / (
+                            0.5 * torch.asarray(self.crop_size))
+                return img_tf, offset_tf
+
 
 def load_timm_pth_model(timm_model_name, model_config, pretrained=True):
     # model_config = timm.models.mobilenetv3.default_cfgs[timm_model_name].default_with_tag
