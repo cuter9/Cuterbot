@@ -5,8 +5,8 @@ import numpy as np
 import os
 import matplotlib
 
-# matplotlib.use("TkAgg")
-matplotlib.use("QtAgg")
+matplotlib.use("TkAgg")
+# matplotlib.use("QtAgg")
 import matplotlib.pyplot as plt
 
 # dir_training_records = os.path.join(dir_depo, 'training records', TRAIN_MODEL)
