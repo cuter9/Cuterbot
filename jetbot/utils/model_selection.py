@@ -115,7 +115,7 @@ class tv_classifier_preprocess():
                                          tf.Normalize(mean=self.mean, std=self.std)
                                          ])
 
-    def __call__(self, img, offset=None, is_traing=True):
+    def __call__(self, img, offset=None, is_training=True):
         # x = offset[0]; y = offset[1]
         # self.pretrained = pretrained
         h, w = img.size
@@ -124,7 +124,7 @@ class tv_classifier_preprocess():
         else:
             offset_in = [[0.5 * h * (offset[0] + 1) , 0.5 * w * (offset[1] + 1)]]
 
-        if is_traing:
+        if is_training:
             offset_kp = tv_tensors.KeyPoints(data=offset_in,
                                              canvas_size=(h, w)
                                              )
@@ -250,7 +250,7 @@ class timm_classifier_preprocess():
         self.tv_version = tv_version
         self.tv_tv_weights = tv_weights
 
-    def __call__(self, img, offset=None, is_train=True):
+    def __call__(self, img, offset=None, is_training=True):
         # x = offset[0]; y = offset[1]
 
         h, w = img.size
@@ -258,7 +258,7 @@ class timm_classifier_preprocess():
             offset_in = [[0.5, 0.5]]
         else:
             offset_in = [[0.5 * h * (offset[0] + 1) , 0.5 * w * (offset[1] + 1)]]
-        if is_train:
+        if is_training:
             offset_kp = tv_tensors.KeyPoints(data=offset_in,
                                              canvas_size=(h, w)
                                              )

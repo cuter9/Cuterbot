@@ -113,9 +113,9 @@ class RoadCruiser(HasTraits):
         image = PIL.Image.fromarray(image)
 
         if self.use_gpu == 'gpu':
-            image = self.preprocess(image, is_train=False).to(self.device).half()
+            image = self.preprocess(image, is_training=False).to(self.device).half()
         elif self.use_gpu == 'cpu':
-            image = self.preprocess(image, is_train=False).to(self.device)
+            image = self.preprocess(image, is_training=False).to(self.device)
 
         return image[None, ...]
 

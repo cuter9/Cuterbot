@@ -80,7 +80,7 @@ class RoadCruiserTRT(HasTraits):
 
     def preprocess_rc(self, image):
         image = PIL.Image.fromarray(image)
-        image = self.preprocess(image).to(self.device).half()
+        image = self.preprocess(image, is_training=False).to(self.device).half()
         return image[None, ...]
 
     def execute_rc(self, change):
