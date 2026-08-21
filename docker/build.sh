@@ -1,5 +1,6 @@
 #!/bin/bash
 
+pre_docker_build.sh
 LOG_FILE=$HOME/Cuterbot/docker/docker_build_.log
 > $LOG_FILE
 source ./configure.sh >> $LOG_FILE
