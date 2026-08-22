@@ -45,8 +45,6 @@ class ClassifierPreprocessV0(torch.nn.Module):
             std: Tuple[float, ...] = (0.229, 0.224, 0.225),
             interpolation: InterpolationMode = InterpolationMode.BILINEAR,
             antialias: Optional[bool] = True,
-            tv_version=tv_tensors,
-            tv_weights=None,
     ) -> None:
         super().__init__()
         self.crop_size = [crop_size]
@@ -55,8 +53,7 @@ class ClassifierPreprocessV0(torch.nn.Module):
         self.std = list(std)
         self.interpolation = interpolation
         self.antialias = antialias
-        self.tv_version = tv_version
-        self.tv_tv_weights = tv_weights
+        self.tv_version = torchvision.__version__
 
     def forward(self, img: Tensor) -> Tensor:
         # ref: https://github.com/pytorch/vision/blob/main/torchvision/transforms/_presets.py#L39
