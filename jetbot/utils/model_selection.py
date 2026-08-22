@@ -14,10 +14,10 @@ from torch import Tensor
 import torchvision
 import torchvision.models as pth_models
 # Jetson nano jetpack does not support torchvision.transforms.v2
-# from torchvision.transforms.v2 import functional as F, InterpolationMode
-# import torchvision.transforms.v2 as tf
-from torchvision.transforms import functional as F, InterpolationMode
-import torchvision.transforms as tf
+from torchvision.transforms.v2 import functional as F, InterpolationMode
+import torchvision.transforms.v2 as tf
+# from torchvision.transforms import functional as F_v1, InterpolationMode as InterpolationMode_v1
+import torchvision.transforms as tf_v1
 from torchvision import tv_tensors
 import timm
 from timm.layers import Linear
@@ -30,7 +30,7 @@ os.environ['MODEL_REPO_DIR_DOCKER'] = MODEL_REPO_DIR_DOCKER
 os.environ['MODEL_REPO_DIR'] = MODEL_REPO_DIR
 
 
-class tv_classifier_preprocess_0(torch.nn.Module):
+class ClassifierPreprocessV0(torch.nn.Module):
     # import weights transform function from torchvision v0.19
     def __init__(
             self,
@@ -66,38 +66,63 @@ class tv_classifier_preprocess_0(torch.nn.Module):
         img = F.normalize(img, mean=self.mean, std=self.std)
         return img
 
-class tv_classifier_preprocess():
+class ClassifierPreprocessV1:
     def __init__(
-            self,
-            *,
-            crop_size=None,
-            resize_size=None,
-            mean: Tuple[float, ...] = (0.485, 0.456, 0.406),
-            std: Tuple[float, ...] = (0.229, 0.224, 0.225),
-            interpolation: InterpolationMode = InterpolationMode.BILINEAR,
-            antialias: Optional[bool] = True,
-            tv_version=None,
-            tv_weights=None,
-            pretrained=True,
-
+        self,
+        model_config = None,
     ) -> None:
-        # super().__init__()
-        self.pretrained = pretrained
-        if resize_size is None:
-            self.resize_size = [256, 256]
-        else:
-            self.resize_size = [resize_size[0], resize_size[0]]
-        if crop_size is None:
-            self.crop_size = [224, 224]
-        else:
-            self.crop_size = [crop_size[0], crop_size[0]]
-        self.mean = list(mean)
-        self.std = list(std)
-        self.interpolation = interpolation
-        self.antialias = antialias
-        self.tv_version = tv_version
-        self.tv_tv_weights = tv_weights
+        self.model_config = model_config
+        self.resize_size = model_config.resize_size
+        self.crop_size = model_config.crop_size
+        self.mean = list(model_config.mean)
+        self.std = list(model_config.std)
+        self.interpolation = model_config.interpolation
+        self.antialias = model_config.antialias
 
+        self.transform_v1 = tf_v1.Compose([tf_v1.Resize(self.crop_size,
+                                                        interpolation=self.interpolation,
+                                                        antialias=self.antialias),
+                                           tf_v1.PILToTensor(),
+                                           tf_v1.ConvertImageDtype(torch.float),
+                                           tf_v1.Normalize(mean=self.mean, std=self.std)
+                                           ])
+    def __call__(self, img):
+        input_data = img
+        output_data = self.transform_v1(input_data)
+        img_tf = output_data
+        return img_tf
+
+class ClassifierPreprocess:
+    def __init__(
+        self,
+        model_config=None,
+    ) -> None:
+        self.model_config = model_config
+        if hasattr(model_config, "resize_size"):
+           self.resize_size = model_config.resize_size
+        else:
+            self.resize_size = [256, 256]
+        if hasattr(model_config, "crop_size"):
+            self.crop_size = model_config.crop_size
+        else:
+            self.crop_size = [224, 224]
+        if hasattr(model_config, "mean"):
+            self.mean = list(model_config.mean)
+        else:
+            self.mean = [0.485, 0.456, 0.406]
+        if hasattr(model_config, "std"):
+            self.std = list(model_config.std)
+        else:
+            self.std = [0.229, 0.224, 0.225]
+        if hasattr(model_config, "interpolation"):
+            self.interpolation = model_config.interpolation
+        else:
+            self.interpolation = InterpolationMode.BILINEAR
+        if hasattr(model_config, "antialias"):
+            self.antialias = model_config.antialias
+        else:
+            self.antialias = True
+        self.tv_version = torchvision.__version__
 
         self.transform_train = tf.Compose([tf.RandomHorizontalFlip(p = 0.5),
                                          tf.ColorJitter(0.3, 0.3, 0.3, 0.3),
@@ -120,7 +145,6 @@ class tv_classifier_preprocess():
 
     def __call__(self, img, offset=None, is_training=True):
         # x = offset[0]; y = offset[1]
-        # self.pretrained = pretrained
         h, w = img.size
         if offset is None:
             offset_in = [[0.5, 0.5]]
@@ -139,9 +163,9 @@ class tv_classifier_preprocess():
             return img_tf, offset_tf
         else:
             if offset is None:
-                input_data = {"img": img,}
+                input_data = img
                 output_data = self.transform_val(input_data)
-                img_tf = output_data["img"]
+                img_tf = output_data
                 return img_tf
             else:
                 offset_kp = tv_tensors.KeyPoints(data=offset_in,
@@ -156,152 +180,69 @@ class tv_classifier_preprocess():
                 return img_tf, offset_tf
 
 def load_pth_model(pth_model_name, weights_cls, pretrained):
-    preprocess_wrap = None
-
+    preprocess = None
     # for fine-tuning
-    if weights_cls:
-        try:
-            weights = getattr(pth_models, weights_cls).DEFAULT
-            preprocess = weights.transforms()
-            classifier_preprocess = tv_classifier_preprocess(crop_size=preprocess.crop_size,
-                                                             resize_size=preprocess.resize_size,
-                                                             mean=preprocess.mean,
-                                                             std=preprocess.std,
-                                                             interpolation=preprocess.interpolation,
-                                                             antialias=preprocess.antialias,
-                                                             tv_version=torchvision.__version__,
-                                                             tv_weights=weights_cls,
-                                                             pretrained=pretrained
-                                                             )
-            #preprocess_wrap = [preprocess, classifier_preprocess]
-            preprocess_wrap = [classifier_preprocess, classifier_preprocess]
-        except AttributeError as err:
-            print("Attribute Error - %s \n" % err, ', Check weights class ( %s ) is correct or not!' % weights_cls)
+    if pretrained:
+        if weights_cls:
+            try:
+                weights = getattr(pth_models, weights_cls).DEFAULT
+                preprocess = weights.transforms()
+                model_config = preprocess
+                model_config.crop_size = [preprocess.crop_size[0], preprocess.crop_size[0]]
+                model_config.resize_size = [preprocess.resize_size[0], preprocess.resize_size[0]]
+                classifier_preprocess = ClassifierPreprocess(model_config)
+                preprocess = [model_config, classifier_preprocess]
+                # preprocess = [classifier_preprocess, classifier_preprocess]
+            except AttributeError as err:
+                print("Attribute Error - %s \n" % err, ', Check weights class ( %s ) is correct or not!' % weights_cls)
 
-        if pretrained:
             model = getattr(pth_models, pth_model_name)(weights=weights, aux_logits=True) \
                 if pth_model_name in ['googlenet', 'inception_v3'] \
                 else getattr(pth_models, pth_model_name)(weights=weights) # for fine-tuning
         else:
+            model = getattr(pth_models, pth_model_name)(pretrained=pretrained, aux_logits=True) \
+                if pth_model_name in ['googlenet', 'inception_v3'] \
+                else getattr(pth_models, pth_model_name)(pretrained=pretrained)
+            print("The  model is load from torchvision with version less then 0.13. \n"
+                  "The preprocess for the loaded model should be re-designed if it is loaded with pretrained weights, or \n "
+                  "The preprocess can be loaded from the pre-stored preprocess module while training the model "
+                  "with torchvision version >= 0.13 (it is recommended!)")
+            preprocess = None
+        return model, preprocess
+    else:
+        if weights_cls:
             model = getattr(pth_models, pth_model_name)(weights=None, aux_logits=True) \
                 if pth_model_name in ['googlenet', 'inception_v3'] \
-                else getattr(pth_models, pth_model_name)(weights=None) # for fine-tuning
-
-    # for inferencing
-    else:
-        model = getattr(pth_models, pth_model_name)(pretrained=pretrained, aux_logits=True) \
-            if pth_model_name in ['googlenet', 'inception_v3'] \
-            else getattr(pth_models, pth_model_name)(pretrained=pretrained)
-        print("The  model is load from torchvision with version less then 0.13. \n"
-              "The preprocess for the loaded model should be re-designed if it is loaded with pretrained weights, or \n "
-              "The preprocess can be loaded from the pre-stored preprocess module while training the model "
-              "with torchvision version >= 0.13 (it is recommended!)")
-
-    return model, preprocess_wrap
-
-# class timm_classifier_preprocess(torch.nn.Module):
-class timm_classifier_preprocess():
-    def __init__(
-            self,
-            *,
-            model_config = None,
-            crop_size: int = 224,
-            resize_size: int = 256,
-            mean: Tuple[float, ...] = (0.485, 0.456, 0.406),
-            std: Tuple[float, ...] = (0.229, 0.224, 0.225),
-            interpolation: InterpolationMode = InterpolationMode.BILINEAR,
-            antialias: Optional[bool] = True,
-            tv_version=None,
-            tv_weights=None,
-            pretrained=True,
-
-    ) -> None:
-        # super().__init__()
-        self.pretrained = pretrained
-        if model_config is not None:
-            self.crop_pct = model_config['crop_pct']
-            self.crop_size = model_config['input_size'][1:]
-            self.resize_size = tuple((torch.asarray(self.crop_size, dtype=torch.float) / self.crop_pct).int().tolist())
-            self.mean = model_config['mean']
-            self.std = model_config['std']
-            self.interpolation = str_to_interp_mode(model_config['interpolation'])
+                else getattr(pth_models, pth_model_name)(weights=None)  # for fine-tuning
         else:
-            self.crop_size = [crop_size]
-            self.resize_size = [resize_size]
-            self.mean = list(mean)
-            self.std = list(std)
-            self.interpolation = interpolation
-        self.antialias = antialias
+            model = getattr(pth_models, pth_model_name)(pretrained=pretrained, aux_logits=True) \
+                if pth_model_name in ['googlenet', 'inception_v3'] \
+                else getattr(pth_models, pth_model_name)(pretrained=pretrained)
+            print("The  model is load from torchvision with version less then 0.13. \n"
+                  "The preprocess for the loaded model should be re-designed if it is loaded with pretrained weights, or \n "
+                  "The preprocess can be loaded from the pre-stored preprocess module while training the model "
+                  "with torchvision version >= 0.13 (it is recommended!)")
+        return model, None
 
-        self.transform_train = tf.Compose([tf.RandomHorizontalFlip(p = 0.5),
-                                         tf.ColorJitter(0.3, 0.3, 0.3, 0.3),
-                                         tf.Resize(self.resize_size,
-                                                   interpolation=self.interpolation,
-                                                   antialias=self.antialias),
-                                         tf.RandomCrop(self.crop_size),
-                                         tf.PILToTensor(),
-                                         tf.ConvertImageDtype(torch.float),
-                                         tf.Normalize(mean=self.mean, std=self.std)
-                                         ])
-        self.transform_val = tf.Compose([tf.Resize(self.crop_size,
-                                                   interpolation=self.interpolation,
-                                                   antialias=self.antialias),
-                                         tf.PILToTensor(),
-                                         tf.ConvertImageDtype(torch.float),
-                                         tf.Normalize(mean=self.mean, std=self.std)
-                                         ])
-        self.tv_version = tv_version
-        self.tv_tv_weights = tv_weights
-
-    def __call__(self, img, offset=None, is_training=True):
-        # x = offset[0]; y = offset[1]
-
-        h, w = img.size
-        if offset is None:
-            offset_in = [[0.5, 0.5]]
-        else:
-            offset_in = [[0.5 * h * (offset[0] + 1) , 0.5 * w * (offset[1] + 1)]]
-        if is_training:
-            offset_kp = tv_tensors.KeyPoints(data=offset_in,
-                                             canvas_size=(h, w)
-                                             )
-            input_data = {"img": img,
-                          "poins_of_interest": offset_kp,}
-            output_data = self.transform_train(input_data)
-            img_tf = output_data["img"]
-            offset_tf = (output_data["poins_of_interest"][0] - 0.5 * torch.asarray(self.crop_size) ) / (0.5 * torch.asarray(self.crop_size))
-            return img_tf, offset_tf
-        else:
-            if offset is None:
-                input_data = {"img": img,}
-                output_data = self.transform_val(input_data)
-                img_tf = output_data["img"]
-                return img_tf
-            else:
-                offset_kp = tv_tensors.KeyPoints(data=offset_in,
-                                                 canvas_size=(h, w)
-                                                 )
-                input_data = {"img": img,
-                              "poins_of_interest": offset_kp, }
-                output_data = self.transform_val(input_data)
-                img_tf = output_data["img"]
-                offset_tf = (output_data["poins_of_interest"][0] - 0.5 * torch.asarray(self.crop_size)) / (
-                            0.5 * torch.asarray(self.crop_size))
-                return img_tf, offset_tf
-
-
-def load_timm_pth_model(timm_model_name, model_config, pretrained=True):
+def load_timm_model(timm_model_name, pretrained=True):
     # model_config = timm.models.mobilenetv3.default_cfgs[timm_model_name].default_with_tag
     model = timm.create_model(timm_model_name, pretrained=pretrained)
-    classifier_preprocess = timm_classifier_preprocess(model_config=model.pretrained_cfg, pretrained=pretrained)
-    preprocess_wrap = [classifier_preprocess, classifier_preprocess]
-    # for p in self.backbone.parameters(): p.requires_grad = False
-    # num_features = self.backbone.feature_info[-1]['num_chs']
+    if not pretrained:
+        return model, None
+    model_config = timm.get_pretrained_cfg(timm_model_name)
+    if hasattr(model_config, "input_size"):
+        model_config.resize_size = list(model_config.input_size[1:])
+    if hasattr(model_config, "crop_pct"):
+        model_config.crop_size = ((torch.asarray(model_config.input_size[1:]) * torch.asarray(model_config.crop_pct)).int()).tolist()
+    if hasattr(model_config, "interpolation"):
+        model_config.interpolation = str_to_interp_mode(model_config.interpolation)
+    classifier_preprocess = ClassifierPreprocess(model_config=model_config)
+    preprocess = [model_config, classifier_preprocess]
 
-    return model, preprocess_wrap
+    return model, preprocess
 
 def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
-    preprocess_wrap = None
+    preprocess = None
     model_type = None
     model = None
     weights_cls = None
@@ -314,7 +255,7 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
             print("torchvision version: %d" % tv)
             weights_cls = pth_model_name.replace("resnet", "ResNet") + "_Weights"
 
-        model, preprocess_wrap = load_pth_model(pth_model_name, weights_cls, pretrained)
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         model.fc = torch.nn.Linear(model.fc.in_features,
                                    2)  # for resnet model must add block expansion factor 4
 
@@ -329,7 +270,7 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
             else:
                 assert weights_cls is not None, "Check the use of the name of the torch model!"
 
-        model, preprocess_wrap = load_pth_model(pth_model_name, weights_cls, pretrained)
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features,
                                               2)  # for mobilenet_v3 model. must add block expansion factor 4
     elif "mobilenetv4" in pth_model_name:
@@ -347,7 +288,7 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
             timm_model_name="mobilenetv4_conv_large"
 
         # model_config = timm.models.mobilenetv3.default_cfgs[timm_model_name].default_with_tag
-        model, preprocess_wrap = load_timm_pth_model(timm_model_name, pretrained)
+        model, preprocess = load_timm_model(timm_model_name, pretrained)
         dd = {'device':None , 'dtype': None}
         model.classifier = Linear(model.head_hidden_size, 2, **dd)
 
@@ -358,7 +299,7 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
             print("torchvision version: %d" % tv)
             weights_cls = "MobileNet_V2_Weights"
 
-        model, preprocess_wrap = load_pth_model(pth_model_name, weights_cls, pretrained)
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features,
                                               2)  # for mobilenet_v2 model. must add block expansion factor 4
 
@@ -368,7 +309,7 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
             print("torchvision version: %d" % tv)
             weights_cls = "VGG11_Weights"
 
-        model, preprocess_wrap = load_pth_model(pth_model_name, weights_cls, pretrained)
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features,
                                               2)  # for VGG model. must add block expansion factor 4
 
@@ -387,7 +328,7 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
             else:
                 raise ValueError(f"Unsupported model type {pth_model_name}")
 
-        model, preprocess_wrap = load_pth_model(pth_model_name, weights_cls, pretrained)
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)  # for efficientnet model
         # model.classifier[0].dropout = torch.nn.Dropout(p=dropout)
 
@@ -397,7 +338,7 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
             print("torchvision version: %d" % tv)
             weights_cls = "Inception_V3_Weights"
 
-        model, preprocess_wrap = load_pth_model(pth_model_name, weights_cls, pretrained)
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         # model.dropout = torch.nn.Dropout(p=dropout)
         model.fc = torch.nn.Linear(model.fc.in_features, 2)
         if model.aux_logits:
@@ -409,7 +350,7 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
             print("torchvision version: %d" % tv)
             weights_cls = "GoogLeNet_Weights"
 
-        model, preprocess_wrap = load_pth_model(pth_model_name, weights_cls, pretrained)
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         model.fc = torch.nn.Linear(model.fc.in_features, 2)
         # model.dropout = torch.nn.Dropout(p=dropout)
         if model.aux_logits:
@@ -424,7 +365,7 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
             print("torchvision version: %d" % tv)
             weights_cls = pth_model_name.replace("densenet", "DenseNet") + "_Weights"
 
-        model, preprocess_wrap = load_pth_model(pth_model_name, weights_cls, pretrained)
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         model.classifier = torch.nn.Linear(model.classifier.in_features, 2)
 
     elif "shufflenet_v2" in pth_model_name:  # shufflenet_v2_x1_0 or shufflenet_v2_x0_5
@@ -433,7 +374,7 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
             print("torchvision version: %d" % tv)
             weights_cls = pth_model_name.replace("shufflenet_v2_x", "ShuffleNet_V2_X") + "_Weights"
 
-        model, preprocess_wrap = load_pth_model(pth_model_name, weights_cls, pretrained)
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         model.fc = torch.nn.Linear(model.fc.in_features, 2)
 
     elif "mnasnet" in pth_model_name:  # mnasnet1_0 or mnasnet0_5
@@ -442,7 +383,7 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
             print("torchvision version: %d" % tv)
             weights_cls = pth_model_name.replace("mnasnet", "MNASNet") + "_Weights"
 
-        model, preprocess_wrap = load_pth_model(pth_model_name, weights_cls, pretrained)
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)
 
     elif "vit" in pth_model_name:  #  vit_b_16,  vit_b_32, vit_l_16, vit_l_32, vit_h_14
@@ -457,7 +398,7 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
             weights_cls_lst[4] = weights_cls_lst[4].upper()
             weights_cls = ''.join(weights_cls_lst) + "_Weights"
 
-        model, preprocess_wrap = load_pth_model(pth_model_name, weights_cls, pretrained)
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         # model.fc = torch.nn.Linear(model.fc.in_features, 2)
         model.heads[-1] = torch.nn.Linear(model.heads[-1].in_features, 2)
 
@@ -465,7 +406,7 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
         assert (
                 model is not None and model_type is not None), "Check if the model name set is compatible with torchvision."
 
-    return model, model_type, preprocess_wrap
+    return model, model_type, preprocess
 
 
 class model_selection(HasTraits):

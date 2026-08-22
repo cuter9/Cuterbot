@@ -11,8 +11,7 @@ from traitlets import HasTraits, Float, Unicode
 import traitlets
 from jetbot import Camera, bgr8_to_jpeg
 from jetbot import Robot
-from jetbot.utils.model_selection import load_tune_pth_model, tv_classifier_preprocess
-
+from jetbot.utils.model_selection import load_tune_pth_model, ClassifierPreprocessV1
 
 class RoadCruiser(HasTraits):
     cruiser_model = Unicode(default_value='').tag(config=True)
@@ -70,6 +69,7 @@ class RoadCruiser(HasTraits):
         print('use %s for inference.' % self.use_gpu)
         # self.cruiser_model.load_state_dict(torch.load('best_steering_model_xy_' + cruiser_model + '.pth'))
         self.cruiser_model_pth.load_state_dict(torch.load(self.cruiser_model))
+        self.cruiser_model_preprocess_pth = torch.load(torch.load(self.cruiser_model_preprocess))
 
         # load preprocess for loaded cruiser model
         # if self.cruiser_model_preprocess_pth is None:  # load pre-stored preprocess module of the trained model
@@ -77,7 +77,8 @@ class RoadCruiser(HasTraits):
         #    # use weights_only=True, ref: https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models
         #    self.preprocess.load_state_dict(torch.load(self.cruiser_model_preprocess))
         #else:  # used the preprocess from load_tune_pth_model
-        self.preprocess = self.cruiser_model_preprocess_pth[0]
+        #　self.preprocess = self.cruiser_model_preprocess_pth[0]
+        self.preprocess = ClassifierPreprocessV1(self.cruiser_model_preprocess_pth[0])
 
         if self.use_gpu == 'gpu':
             print("torch cuda version : ", torch.version.cuda)
@@ -112,10 +113,11 @@ class RoadCruiser(HasTraits):
         # tv = int(torchvision.__version__.split(".")[1])  # torchvision version
         image = PIL.Image.fromarray(image)
 
+        # "v1" for torchvision transform v1
         if self.use_gpu == 'gpu':
-            image = self.preprocess(image, is_training=False).to(self.device).half()
+            image = self.preprocess(image, "v1", is_training=False).to(self.device).half()
         elif self.use_gpu == 'cpu':
-            image = self.preprocess(image, is_training=False).to(self.device)
+            image = self.preprocess(image, "v1", is_training=False).to(self.device)
 
         return image[None, ...]
 
