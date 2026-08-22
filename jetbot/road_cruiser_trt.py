@@ -12,7 +12,7 @@ from torch2trt import TRTModule
 from jetbot import Camera, bgr8_to_jpeg
 from jetbot import Robot
 
-from jetbot.utils.model_selection import tv_classifier_preprocess
+from jetbot.utils.model_selection import ClassifierPreprocessV1
 
 
 class RoadCruiserTRT(HasTraits):
@@ -68,9 +68,11 @@ class RoadCruiserTRT(HasTraits):
         if "workspace" in self.cruiser_model:
             self.trt_model_rc.load_state_dict(torch.load(self.cruiser_model))
             # load preprocess for loaded cruiser model
-            self.preprocess = tv_classifier_preprocess()
+            # self.preprocess = tv_classifier_preprocesss()
             # use weights_only=True, ref: https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models
-            self.preprocess.load_state_dict(torch.load(self.cruiser_model_preprocess))
+            # self.preprocess.load_state_dict(torch.load(self.cruiser_model_preprocess))
+            model_config = torch.load(torch.load(self.cruiser_model_preprocess))[0]
+            self.preprocess = ClassifierPreprocessV1(model_config)
             self.preprocess.to(self.device).eval().half()
 
         else:

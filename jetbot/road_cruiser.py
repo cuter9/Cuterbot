@@ -78,7 +78,8 @@ class RoadCruiser(HasTraits):
         #    self.preprocess.load_state_dict(torch.load(self.cruiser_model_preprocess))
         #else:  # used the preprocess from load_tune_pth_model
         #　self.preprocess = self.cruiser_model_preprocess_pth[0]
-        self.preprocess = ClassifierPreprocessV1(self.cruiser_model_preprocess_pth[0])
+        model_config = self.cruiser_model_preprocess_pth[0]
+        self.preprocess = ClassifierPreprocessV1(model_config)
 
         if self.use_gpu == 'gpu':
             print("torch cuda version : ", torch.version.cuda)
