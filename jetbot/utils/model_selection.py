@@ -22,8 +22,9 @@ else:
     from torchvision.transforms import functional as tt_func, InterpolationMode
     import torchvision.transforms as tf
 
+# timm version '0.6.12' for nano
 import timm
-from timm.layers import Linear
+# from timm.layers import Linear
 
 HEAD_LIST = ['model_function', 'model_type', 'model_path', 'preprocess_path']
 # MODEL_REPO_DIR = os.path.join(os.environ["HOME"], "model_repo")
@@ -293,7 +294,8 @@ def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
         # model_config = timm.models.mobilenetv3.default_cfgs[timm_model_name].default_with_tag
         model, preprocess = load_timm_model(timm_model_name, pretrained)
         dd = {'device':None , 'dtype': None}
-        model.classifier = Linear(model.head_hidden_size, 2, **dd)
+        # model.classifier = Linear(model.head_hidden_size, 2, **dd)
+        model.classifier = torch.nn.Linear(model.head_hidden_size, 2)
 
     # for mobilenet_v2 model. must add block expansion factor 4
     elif pth_model_name == 'mobilenet_v2':
