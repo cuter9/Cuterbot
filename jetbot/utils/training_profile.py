@@ -18,9 +18,9 @@ font = {'fontweight': 'normal', 'fontsize': 16}
 font_title = {'fontweight': 'normal', 'fontsize': 20}
 
 # plot the training convergence profile
-def plot_loss(loss_data, best_loss, no_epoch,
+def plot_loss(loss_data, best_loss, no_epoch, epoch,
               dir_training_records, train_model, train_method, processor,
-              show_training_plot=False):
+              show_training_plot=False, save_plot=False):
     plt.cla()
     plt.tick_params(axis='both', labelsize='large')
     epochs = range(len(loss_data))
@@ -32,27 +32,26 @@ def plot_loss(loss_data, best_loss, no_epoch,
     xlim = epochs[-1] + 2
     ax_1.set_xlim(0, xlim)
 
-    plt.title("Training convergence ({:s} with {:s}) -- {:s} \n the best test loss : {:.4f}".
-              format(train_method, processor, train_model, best_loss),
+    plt.title(f"Training convergence ({train_method} with {processor}) -- {train_model} \n the best test loss : {best_loss:.5f}@{epoch}th epoch",
               fontdict=font_title)
     plt.xlabel('epoch', fontdict=font)
     plt.ylabel('loss', fontdict=font)
     plt.legend(fontsize='x-large')
 
+    if save_plot:
+        profile_plot = os.path.join(dir_training_records,
+                                    f"Training_convergence_plot_Model_{train_model}_Training_Method_{train_method}")
+        fig_1.savefig(profile_plot)
+
     fig_1.canvas.draw()
     fig_1.canvas.flush_events()
     if show_training_plot:
         plt.show(block=False)
-    if len(loss_data) >= no_epoch:
-        profile_plot = os.path.join(dir_training_records,
-                                    "Training_convergence_plot_Model_{:s}_Training_Method_{:s})".
-                                    format(train_model, train_method))
-        fig_1.savefig(profile_plot)
     # plt.clf()
 
 
 # plot the statistical histogram of learning time in terms of epoch and sample
-def lt_plot(lt_epoch, lt_sample, overall_time, dir_training_records, train_model, train_method, processor):
+def lt_plot(lt_epoch, lt_sample, overall_time, dir_training_records, train_model, train_method, processor, save_plot=False):
     from math import ceil, floor
     import time
     # ----- training time statistics in terms of epoch
@@ -77,9 +76,8 @@ def lt_plot(lt_epoch, lt_sample, overall_time, dir_training_records, train_model
         format(mean_lt_sample, max_lt_sample, min_lt_sample))
 
     fig_2, axh = plt.subplots(1, 2, figsize=(14, 6))
-    fig_2.suptitle("Training Time Statistics ({:s} with {:s}) -- {:s} \n Overall training time : {:s} ({:.2f} sec.)".
-                   format(train_method, processor, train_model,
-                          time.strftime("%H:%M:%S", time.gmtime(ceil(overall_time))), overall_time),
+    time_used = time.strftime("%H:%M:%S", time.gmtime(ceil(overall_time)))
+    fig_2.suptitle(f"Training Time Statistics ({train_method} with {processor}) -- {train_model} \n Overall training time : {time_used} ({overall_time:.2f} sec.)",
                    fontsize=20, fontweight='normal')
     axh[0].set_ylabel('no. of epochs', fontdict=font)
     axh[0].set_xlabel('Mean time for training an epoch, sec.', fontdict=font)
@@ -106,11 +104,11 @@ def lt_plot(lt_epoch, lt_sample, overall_time, dir_training_records, train_model
                   % (float(mean_lt_sample), float(max_lt_sample), float(min_lt_sample)))
     axh[1].text(0.55, 0.85, text_str_1, transform=axh[1].transAxes, fontsize=10, verticalalignment='top', bbox=props)
 
+    training_time_file = os.path.join(dir_training_records,
+                                      f"Training_time_Model_{train_model}_Training_Method_{train_method}")
+    if save_plot:
+        fig_2.savefig(training_time_file)
     fig_2.canvas.draw()
     fig_2.canvas.flush_events()
     plt.show(block=False)
-    training_time_file = os.path.join(dir_training_records,
-                                      "Training_time_Model_{:s}_Training_Method_{:s})".
-                                      format(train_model, train_method))
-    fig_2.savefig(training_time_file)
     # plt.clf()
