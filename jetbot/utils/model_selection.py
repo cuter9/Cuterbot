@@ -18,8 +18,8 @@ tv_ver = torchvision.__version__
 if int(tv_ver.split(".")[1]) > 11:
     from torchvision.transforms.v2 import functional as tt_func, InterpolationMode
     import torchvision.transforms.v2 as tf
-    from torchvision.transforms import functional as tt_func, InterpolationMode
 else:
+    from torchvision.transforms import functional as tt_func, InterpolationMode
     import torchvision.transforms as tf
 from torchvision import tv_tensors
 import timm
