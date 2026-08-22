@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-from PIL.Image import Transform
+from PIL.ImageTransform import Transform
 from sympy import true
 from timm.data import str_to_interp_mode
 
@@ -218,7 +218,7 @@ class timm_classifier_preprocess():
         if model_config is not None:
             self.crop_pct = model_config['crop_pct']
             self.crop_size = model_config['input_size'][1:]
-            self.resize_size = tuple((torch.asarray(self.crop_size, dtype=float) / self.crop_pct).int().tolist())
+            self.resize_size = tuple((torch.asarray(self.crop_size, dtype=torch.float) / self.crop_pct).int().tolist())
             self.mean = model_config['mean']
             self.std = model_config['std']
             self.interpolation = str_to_interp_mode(model_config['interpolation'])
