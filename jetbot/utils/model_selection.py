@@ -16,10 +16,11 @@ import torchvision.models as pth_models
 # Jetson nano jetpack does not support torchvision.transforms.v2
 tv_ver = torchvision.__version__
 if int(tv_ver.split(".")[1]) > 11:
-    from torchvision.transforms.v2 import functional as F, InterpolationMode
+    from torchvision.transforms.v2 import functional as tt_func, InterpolationMode
     import torchvision.transforms.v2 as tf
-# from torchvision.transforms import functional as F_v1, InterpolationMode as InterpolationMode_v1
-import torchvision.transforms as tf_v1
+    from torchvision.transforms import functional as tt_func, InterpolationMode
+else:
+    import torchvision.transforms as tf
 from torchvision import tv_tensors
 import timm
 from timm.layers import Linear
@@ -60,12 +61,12 @@ class ClassifierPreprocessV0(torch.nn.Module):
         # ref: https://github.com/pytorch/vision/blob/main/torchvision/transforms/_presets.py#L39
         # ImageClassification of torchvision is intentionally used for to preprocess image when validating and evaluating
         # use RandomResizedCrop instaed of F.center_crop when training
-        img = F.resize(img, self.resize_size, interpolation=self.interpolation, antialias=self.antialias)
-        img = F.center_crop(img, self.crop_size)
+        img = tt_func.resize(img, self.resize_size, interpolation=self.interpolation, antialias=self.antialias)
+        img = tt_func.center_crop(img, self.crop_size)
         if not isinstance(img, Tensor):
-            img = F.pil_to_tensor(img)
-        img = F.convert_image_dtype(img, torch.float)
-        img = F.normalize(img, mean=self.mean, std=self.std)
+            img = tt_func.pil_to_tensor(img)
+        img = tt_func.convert_image_dtype(img, torch.float)
+        img = tt_func.normalize(img, mean=self.mean, std=self.std)
         return img
 
 class ClassifierPreprocessV1:
@@ -81,13 +82,13 @@ class ClassifierPreprocessV1:
         self.interpolation = model_config.interpolation
         self.antialias = model_config.antialias
 
-        self.transform_v1 = tf_v1.Compose([tf_v1.Resize(self.crop_size,
-                                                        interpolation=self.interpolation,
-                                                        antialias=self.antialias),
-                                           tf_v1.PILToTensor(),
-                                           tf_v1.ConvertImageDtype(torch.float),
-                                           tf_v1.Normalize(mean=self.mean, std=self.std)
-                                           ])
+        self.transform_v1 = tf.Compose([tf.Resize(self.crop_size,
+                                                  interpolation=self.interpolation,
+                                                  antialias=self.antialias),
+                                        tf.PILToTensor(),
+                                        tf.ConvertImageDtype(torch.float),
+                                        tf.Normalize(mean=self.mean, std=self.std)
+                                        ])
     def __call__(self, img):
         input_data = img
         output_data = self.transform_v1(input_data)
