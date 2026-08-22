@@ -1,0 +1,11 @@
+#!/bin/bash
+
+sudo git pull origin v2.01
+sudo git reset --hard origin/v2.01
+
+# shellcheck disable=SC2046
+sudo chown $(whoami) "/home/cuterbot/Cuterbot/shell_scripts/fix_files.sh"
+sudo chmod +x  "$HOME"/Cuterbot/shell_scripts/fix_files.sh
+# shellcheck disable=SC1001
+sudo F:\Courses\Course_Demos\NTUC\AI_Lecture_Demos\Cuterbot\shell_scripts\fix_files.sh
+
