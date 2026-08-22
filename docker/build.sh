@@ -13,4 +13,7 @@ cd display && ./build.sh && cd .. >> $LOG_FILE
 cd jupyter && ./build.sh && cd .. >> $LOG_FILE
 cd camera && ./build.sh && cd .. >> $LOG_FILE
 
+./disable.sh
+docker image prune -f
+
 cd "$HOME"
