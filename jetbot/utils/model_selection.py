@@ -13,12 +13,11 @@ import torch
 from torch import Tensor
 import torchvision
 import torchvision.models as pth_models
-from torchvision import tv_tensors
 # Jetson nano jetpack does not support torchvision.transforms.v2
-tv_ver = torchvision.__version__
-if int(tv_ver.split(".")[1]) >= 17:
+if int(torchvision.__version__.split(".")[1]) >= 17:
     from torchvision.transforms.v2 import functional as tt_func, InterpolationMode
     import torchvision.transforms.v2 as tf
+    from torchvision import tv_tensors
 else:
     from torchvision.transforms import functional as tt_func, InterpolationMode
     import torchvision.transforms as tf
