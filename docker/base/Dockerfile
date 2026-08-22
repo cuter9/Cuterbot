@@ -40,13 +40,14 @@ RUN apt-get update && \
           libjpeg-dev \
 		  zip \
 		  libjpeg8-dev \
+          python3-pyqt5 \
     && rm -rf /var/lib/apt/lists/*
 
 # RUN pip3 install setuptools Cython wheel
 RUN apt-get install -y python3-pip pkg-config
 RUN pip3 install pip -U   # upgrade pip for following installation of protobuf
 RUN pip3 install setuptools wheel
-RUN pip3 install matplotlib pillow
+RUN pip3 install matplotlib pillow sympy
 
 # TF 1.15
 # ARG TENSORFLOW_URL=https://nvidia.box.com/shared/static/rummpy6q1km1wivomalpkwt2jy28mndf.whl
