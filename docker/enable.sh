@@ -1,3 +1,8 @@
+#!/bin/bash
+
+# shellcheck disable=SC2164
+cd "$HOME"/Cuterbot/docker
+
 source configure.sh
 
 JUPYTER_WORKSPACE=${1:-$HOME}  # default to $HOME
@@ -10,3 +15,5 @@ fi
 
 ./display/enable.sh
 ./jupyter/enable.sh $JUPYTER_WORKSPACE $JETBOT_CAMERA
+
+cd "$HOME"
