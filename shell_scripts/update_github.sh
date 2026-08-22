@@ -3,6 +3,7 @@
 sudo git pull origin v2.01
 sudo git reset --hard origin/v2.01
 
+sudo chmod +x "/home/cuterbot/Cuterbot/shell_scripts/update_github.sh"
 # shellcheck disable=SC2046
 sudo chown $(whoami) "/home/cuterbot/Cuterbot/shell_scripts/fix_files.sh"
 sudo chmod +x  "$HOME"/Cuterbot/shell_scripts/fix_files.sh
