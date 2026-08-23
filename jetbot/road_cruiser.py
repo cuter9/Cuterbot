@@ -69,7 +69,7 @@ class RoadCruiser(HasTraits):
         print('use %s for inference.' % self.use_gpu)
         # self.cruiser_model.load_state_dict(torch.load('best_steering_model_xy_' + cruiser_model + '.pth'))
         self.cruiser_model_pth.load_state_dict(torch.load(self.cruiser_model))
-        self.cruiser_model_preprocess_pth = torch.load(torch.load(self.cruiser_model_preprocess))
+        self.cruiser_model_preprocess_pth = torch.load(self.cruiser_model_preprocess)
 
         # load preprocess for loaded cruiser model
         # if self.cruiser_model_preprocess_pth is None:  # load pre-stored preprocess module of the trained model
