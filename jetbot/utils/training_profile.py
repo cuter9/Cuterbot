@@ -19,7 +19,7 @@ font = {'fontweight': 'normal', 'fontsize': 16}
 font_title = {'fontweight': 'normal', 'fontsize': 20}
 
 # plot the training convergence profile
-def plot_loss(loss_data, best_loss, no_epoch, epoch, info_train,
+def plot_loss(loss_data, best_loss, best_epoch, no_epoch, epoch, info_train,
               dir_training_records, train_model, train_method, processor,
               show_training_plot=False, save_plot=False):
     # print(f"【除錯訊息】當前呼叫 plot_loss 的 save_plot 狀態為: {save_plot}")
@@ -38,7 +38,7 @@ def plot_loss(loss_data, best_loss, no_epoch, epoch, info_train,
     # 修正 title 寫法（保持與您原本一致，但使用 ax_1 設定更安全）
     ax_1.set_title(
         f"Training convergence ({train_method} with {processor}) -- {train_model} \n "
-        f"the best test loss : {best_loss:.5f}@{epoch}th epoch",
+        f"the best test loss : {best_loss:.5f}@{best_epoch}th epoch",
         fontdict=font_title)
     ax_1.set_xlabel('epoch', fontdict=font)
     ax_1.set_ylabel('loss', fontdict=font)
