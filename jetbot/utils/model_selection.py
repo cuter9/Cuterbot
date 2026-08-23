@@ -126,15 +126,16 @@ class ClassifierPreprocess:
         self.tv_version = torchvision.__version__
 
         self.transform_train = tf.Compose([tf.RandomHorizontalFlip(p = 0.5),
-                                         tf.ColorJitter(0.3, 0.3, 0.3, 0.3),
-                                         tf.Resize(self.resize_size,
+                                           tf.ColorJitter(0.3, 0.3, 0.3, 0.3),
+                                           tf.RandomRotation(10),
+                                           tf.Resize(self.resize_size,
                                                    interpolation=self.interpolation,
                                                    antialias=self.antialias),
-                                         tf.RandomCrop(self.crop_size),
-                                         tf.PILToTensor(),
-                                         tf.ConvertImageDtype(torch.float),
-                                         tf.Normalize(mean=self.mean, std=self.std)
-                                         ])
+                                           tf.RandomCrop(self.crop_size),
+                                           tf.PILToTensor(),
+                                           tf.ConvertImageDtype(torch.float),
+                                           tf.Normalize(mean=self.mean, std=self.std)
+                                           ])
 
         self.transform_val = tf.Compose([tf.Resize(self.crop_size,
                                                    interpolation=self.interpolation,
