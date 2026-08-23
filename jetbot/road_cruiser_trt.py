@@ -71,7 +71,7 @@ class RoadCruiserTRT(HasTraits):
             # self.preprocess = tv_classifier_preprocesss()
             # use weights_only=True, ref: https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models
             # self.preprocess.load_state_dict(torch.load(self.cruiser_model_preprocess))
-            model_config = torch.load(torch.load(self.cruiser_model_preprocess))[0]
+            model_config = torch.load(self.cruiser_model_preprocess)[0]
             self.preprocess = ClassifierPreprocessV1(model_config)
             self.preprocess.to(self.device).eval().half()
 
