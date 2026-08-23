@@ -12,7 +12,7 @@ sudo chmod +x "/home/cuterbot/Cuterbot/scripts/update_github.sh"
 sleep 5
 # shellcheck disable=SC2046
 sudo chown $(whoami) "/home/cuterbot/Cuterbot/scripts/fix_files.sh"
-sudo chmod +x  "$HOME"/Cuterbot/shell_scripts/fix_files.sh
+sudo chmod +x  "$HOME"/Cuterbot/scripts/fix_files.sh
 # shellcheck disable=SC1001
 sudo "/home/cuterbot/Cuterbot/scripts/fix_files.sh"
 # shellcheck disable=SC2164
