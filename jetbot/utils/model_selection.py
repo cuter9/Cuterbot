@@ -127,10 +127,11 @@ class ClassifierPreprocess:
 
         self.transform_train = tf.Compose([tf.RandomHorizontalFlip(p = 0.5),
                                            tf.ColorJitter(0.3, 0.3, 0.3, 0.3),
-                                           tf.RandomRotation(10),
+                                           tf.RandomRotation(15),
                                            tf.Resize(self.resize_size,
                                                    interpolation=self.interpolation,
                                                    antialias=self.antialias),
+                                           tf.RandomRotation(15),
                                            tf.RandomCrop(self.crop_size),
                                            tf.PILToTensor(),
                                            tf.ConvertImageDtype(torch.float),
