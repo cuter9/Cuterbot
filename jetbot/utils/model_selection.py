@@ -27,7 +27,7 @@ else:
 import timm
 # from timm.layers import Linear
 
-HEAD_LIST = ['model_function', 'model_type', 'model_path', 'preprocess_path']
+HEAD_LIST = ['model_function', 'model_type', 'model_path', 'preprocess_nano_path', "preprocess_path"]
 # MODEL_REPO_DIR = os.path.join(os.environ["HOME"], "model_repo")
 MODEL_REPO_DIR = os.path.join("/home/cuterbot", "model_repo")
 MODEL_REPO_DIR_DOCKER = os.path.join("/workspace", "model_repo")
@@ -492,8 +492,9 @@ class model_selection(HasTraits):
         if change['name'] == 'model_path':
             self.model_path = change['new']
             mp = self.df[self.df.model_path == self.model_path]
+            print("model path: ", mp)
             mpp = mp.preprocess_nano_path.tolist()
-            # print("preprocess path: ", mpp)
+            print("preprocess path: ", mpp)
             self.preprocess_nano_path = mpp[0]
 
             # self.selected_model_path = os.path.join(MODEL_REPO_DIR_DOCKER, self.model_path.split("/", 1)[1])
