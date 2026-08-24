@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib
 
-matplotlib.use("TkAgg")
+# matplotlib.use("TkAgg")
+matplotlib.use("Qt5Agg")
 import matplotlib.pyplot as plt
 
 font = {'fontweight': 'normal', 'fontsize': 12}
@@ -42,4 +43,4 @@ def plot_exec_time(execution_time, model_name, model_str):
 
     # fig.canvas.draw()
     # fig.canvas.flush_events()
-    plt.show(block=False)
+    plt.show()
