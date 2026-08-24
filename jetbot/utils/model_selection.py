@@ -74,7 +74,6 @@ class ClassifierPreprocessV1:
         model_config = None,
     ) -> None:
         # self.model_config = model_config
-        print("model_config: ", model_config)
         self.model_config = SimpleNamespace(**model_config)
         self.resize_size = self.model_config.resize_size
         self.crop_size = self.model_config.crop_size
@@ -82,8 +81,9 @@ class ClassifierPreprocessV1:
         self.std = list(self.model_config.std)
         self.interpolation = InterpolationMode(self.model_config.interpolation)
         self.antialias = self.model_config.antialias
-        print("resize_size: ", self.resize_size)
-        print("interpolation: ", self.interpolation)
+        print("preprocess configuration: ", model_config)
+        # print("resize_size: ", self.resize_size)
+        # print("interpolation: ", self.interpolation)
 
         self.transform_v1 = tf.Compose([tf.Resize(self.crop_size,
                                                   interpolation=self.interpolation,
@@ -224,9 +224,7 @@ def load_pth_model(pth_model_name, weights_cls, pretrained):
                 if pth_model_name in ['googlenet', 'inception_v3'] \
                 else getattr(pth_models, pth_model_name)(pretrained=pretrained)
             print("The  model is load from torchvision with version less then 0.13. \n"
-                  "The preprocess for the loaded model should be re-designed if it is loaded with pretrained weights, or \n "
-                  "The preprocess can be loaded from the pre-stored preprocess module while training the model "
-                  "with torchvision version >= 0.13 (it is recommended!)")
+                  "The preprocess is get from the pretrained weights of torchvision with version >= 0.13 (it is recommended!)")
             preprocess = None
         return model, preprocess
     else:
@@ -238,10 +236,8 @@ def load_pth_model(pth_model_name, weights_cls, pretrained):
             model = getattr(pth_models, pth_model_name)(pretrained=pretrained, aux_logits=True) \
                 if pth_model_name in ['googlenet', 'inception_v3'] \
                 else getattr(pth_models, pth_model_name)(pretrained=pretrained)
-            print("The  model is load from torchvision with version less then 0.13. \n"
-                  "The preprocess for the loaded model should be re-designed if it is loaded with pretrained weights, or \n "
-                  "The preprocess can be loaded from the pre-stored preprocess module while training the model "
-                  "with torchvision version >= 0.13 (it is recommended!)")
+            print("The  model is load from torchvision with version less then 0.13 ! \n"
+                  "The preprocess prestored from the pretrained weights of torchvision with version >= 0.13 will be used!")
         return model, None
 
 def load_timm_model(timm_model_name, pretrained=True):
