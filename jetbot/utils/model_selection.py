@@ -452,7 +452,8 @@ class model_selection(HasTraits):
 
         for p in self.df.values:
             p[2] = os.path.join(dir_model_repo, p[2].split("/", 1)[1])  # add "workspace" to the path of model
-            p[3] = os.path.join(dir_model_repo, p[3].split("/", 1)[1])  # and model preprocess
+            p[3] = os.path.join(dir_model_repo, p[3].split("/", 1)[1])  # and model preprocess for nano
+            p[4] = os.path.join(dir_model_repo, p[4].split("/", 1)[1])  # and model preprocess
 
         self.model_function_list = list(self.df["model_function"].astype("category").cat.categories)
         self.update_model_type_list()
