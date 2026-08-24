@@ -8,6 +8,7 @@ from timm.data import str_to_interp_mode
 from traitlets import HasTraits, Unicode, List, Bool
 # import numpy as np
 from typing import Optional, Tuple
+from types import SimpleNamespace
 
 import torch
 from torch import Tensor
@@ -72,13 +73,14 @@ class ClassifierPreprocessV1:
         self,
         model_config = None,
     ) -> None:
-        self.model_config = model_config
-        self.resize_size = model_config.resize_size
-        self.crop_size = model_config.crop_size
-        self.mean = list(model_config.mean)
-        self.std = list(model_config.std)
-        self.interpolation = model_config.interpolation
-        self.antialias = model_config.antialias
+        # self.model_config = model_config
+        self.model_config = SimpleNamespace(**model_config)
+        self.resize_size = self.model_config.resize_size
+        self.crop_size = self.model_config.crop_size
+        self.mean = list(self.model_config.mean)
+        self.std = list(self.model_config.std)
+        self.interpolation = InterpolationMode(self.model_config.interpolation)
+        self.antialias = self.model_config.antialias
 
         self.transform_v1 = tf.Compose([tf.Resize(self.crop_size,
                                                   interpolation=self.interpolation,
@@ -145,6 +147,18 @@ class ClassifierPreprocess:
                                          tf.ConvertImageDtype(torch.float),
                                          tf.Normalize(mean=self.mean, std=self.std)
                                          ])
+    @property
+    def config(self):
+        config = {
+            "resize_size": self.resize_size,
+            "crop_size":self.crop_size,
+            "mean": self.mean,
+            "std": self.std,
+            "antialias": bool(self.antialias),
+            # 內插法模式轉成整數（例如 BILINEAR = 'bilinear'），避免舊版找不到新版的列舉類別
+            "interpolation": self.interpolation.value
+        }
+        return config
 
     def __call__(self, img, offset=None, is_training=True):
         # x = offset[0]; y = offset[1]
@@ -189,13 +203,13 @@ def load_pth_model(pth_model_name, weights_cls, pretrained):
         if weights_cls:
             try:
                 weights = getattr(pth_models, weights_cls).DEFAULT
-                preprocess = weights.transforms()
-                model_config = preprocess
-                model_config.crop_size = [preprocess.crop_size[0], preprocess.crop_size[0]]
-                model_config.resize_size = [preprocess.resize_size[0], preprocess.resize_size[0]]
+                weights_transforms = weights.transforms()
+                model_config = weights_transforms
+                model_config.crop_size = [weights_transforms.crop_size[0], weights_transforms.crop_size[0]]
+                model_config.resize_size = [weights_transforms.resize_size[0], weights_transforms.resize_size[0]]
                 classifier_preprocess = ClassifierPreprocess(model_config)
-                preprocess = [model_config, classifier_preprocess]
-                # preprocess = [classifier_preprocess, classifier_preprocess]
+                # preprocess = [model_config, classifier_preprocess]
+                preprocess = [classifier_preprocess.config, classifier_preprocess]
             except AttributeError as err:
                 print("Attribute Error - %s \n" % err, ', Check weights class ( %s ) is correct or not!' % weights_cls)
 
@@ -240,7 +254,8 @@ def load_timm_model(timm_model_name, pretrained=True):
     if hasattr(model_config, "interpolation"):
         model_config.interpolation = str_to_interp_mode(model_config.interpolation)
     classifier_preprocess = ClassifierPreprocess(model_config=model_config)
-    preprocess = [model_config, classifier_preprocess]
+    # preprocess = [model_config, classifier_preprocess]
+    preprocess = [classifier_preprocess.config, classifier_preprocess]
 
     return model, preprocess
 
@@ -421,6 +436,7 @@ class model_selection(HasTraits):
     model_path = Unicode(default_value='').tag(config=True)
     model_path_list = List(default_value=[]).tag(config=True)
     selected_model_path = Unicode(default_value='').tag(config=True)
+    preprocess_nano_path = Unicode(default_value='').tag(config=True)
     preprocess_path = Unicode(default_value='').tag(config=True)
     is_selected = Bool(default_value=False).tag(config=True)
 
@@ -476,9 +492,9 @@ class model_selection(HasTraits):
         if change['name'] == 'model_path':
             self.model_path = change['new']
             mp = self.df[self.df.model_path == self.model_path]
-            mpp = mp.preprocess_path.tolist()
+            mpp = mp.preprocess_nano_path.tolist()
             # print("preprocess path: ", mpp)
-            self.preprocess_path = mpp[0]
+            self.preprocess_nano_path = mpp[0]
 
             # self.selected_model_path = os.path.join(MODEL_REPO_DIR_DOCKER, self.model_path.split("/", 1)[1])
         # print(self.selected_model_path)
