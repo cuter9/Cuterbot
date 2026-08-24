@@ -491,10 +491,11 @@ class model_selection(HasTraits):
         if change['name'] == 'model_path':
             self.model_path = change['new']
             mp = self.df[self.df.model_path == self.model_path]
-            print("model path: ", mp)
-            mpp = mp.preprocess_nano_path.tolist()
-            print("preprocess path: ", mpp)
-            self.preprocess_nano_path = mpp[0]
+            # print("model path: ", mp)
+            mpp_nano = mp.preprocess_nano_path.tolist()
+            self.preprocess_nano_path = mpp_nano[0]
+            mpp = mp.preprocess_path.tolist()
+            self.preprocess_path = mpp[0]
 
             # self.selected_model_path = os.path.join(MODEL_REPO_DIR_DOCKER, self.model_path.split("/", 1)[1])
         # print(self.selected_model_path)
