@@ -74,6 +74,7 @@ class ClassifierPreprocessV1:
         model_config = None,
     ) -> None:
         # self.model_config = model_config
+        print("model_config: ", model_config)
         self.model_config = SimpleNamespace(**model_config)
         self.resize_size = self.model_config.resize_size
         self.crop_size = self.model_config.crop_size
@@ -81,6 +82,8 @@ class ClassifierPreprocessV1:
         self.std = list(self.model_config.std)
         self.interpolation = InterpolationMode(self.model_config.interpolation)
         self.antialias = self.model_config.antialias
+        print("resize_size: ", self.resize_size)
+        print("interpolation: ", self.interpolation)
 
         self.transform_v1 = tf.Compose([tf.Resize(self.crop_size,
                                                   interpolation=self.interpolation,
@@ -89,7 +92,7 @@ class ClassifierPreprocessV1:
                                         tf.ConvertImageDtype(torch.float),
                                         tf.Normalize(mean=self.mean, std=self.std)
                                         ])
-    def __call__(self, img):
+    def __call__(self, img, is_training=False):
         input_data = img
         output_data = self.transform_v1(input_data)
         img_tf = output_data

@@ -78,7 +78,7 @@ class RoadCruiser(HasTraits):
         #    self.preprocess.load_state_dict(torch.load(self.cruiser_model_preprocess))
         #else:  # used the preprocess from load_tune_pth_model
         #　self.preprocess = self.cruiser_model_preprocess_pth[0]
-        model_config = self.cruiser_model_preprocess_pth[0]
+        model_config = self.cruiser_model_preprocess_pth
         self.preprocess = ClassifierPreprocessV1(model_config)
 
         if self.use_gpu == 'gpu':
@@ -87,15 +87,16 @@ class RoadCruiser(HasTraits):
             self.device = torch.device('cuda')
             self.cruiser_model_pth.to(self.device)
             self.cruiser_model_pth.eval().half()
-            self.preprocess.to(self.device)
-            self.preprocess.eval().half()
+            # self.preprocess.to(self.device)
+            # self.preprocess.eval().half()
+            # self.preprocess
 
         elif self.use_gpu == 'cpu':
             self.device = torch.device('cpu')
             self.cruiser_model_pth.to(self.device)
             self.cruiser_model_pth.eval()
-            self.preprocess.to(self.device)
-            self.preprocess.eval()
+            # self.preprocess.to(self.device)
+            # self.preprocess.eval()
 
         # self.cruiser_model = self.cruiser_model.float()
         # self.cruiser_model = self.cruiser_model.to(self.device, dtype=torch.float)
@@ -116,9 +117,9 @@ class RoadCruiser(HasTraits):
 
         # "v1" for torchvision transform v1
         if self.use_gpu == 'gpu':
-            image = self.preprocess(image, "v1", is_training=False).to(self.device).half()
+            image = self.preprocess(image, is_training=False).to(self.device).half()
         elif self.use_gpu == 'cpu':
-            image = self.preprocess(image, "v1", is_training=False).to(self.device)
+            image = self.preprocess(image, is_training=False).to(self.device)
 
         return image[None, ...]
 
