@@ -8,7 +8,7 @@ sudo git reset --hard origin/v2.01
 # shellcheck disable=SC1065
 sleep 5
 # shellcheck disable=SC1072
-sudo chmod +x "/home/cuterbot/Cuterbot/scripts/update_github.sh"
+sudo chmod +x "/home/cuterbot/Cuterbot/scripts/update_cuterbot.sh"
 sleep 5
 # shellcheck disable=SC2046
 sudo chown $(whoami) "/home/cuterbot/Cuterbot/scripts/fix_files.sh"
