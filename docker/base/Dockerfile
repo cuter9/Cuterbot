@@ -45,7 +45,7 @@ RUN apt-get update && \
 RUN apt-get install -y python3-pip pkg-config
 RUN pip3 install pip -U   # upgrade pip for following installation of protobuf
 RUN pip3 install setuptools wheel
-RUN pip3 install matplotlib pillow sympy timm
+RUN pip3 install matplotlib pillow sympy timm paramiko
 
 # TF 1.15
 # ARG TENSORFLOW_URL=https://nvidia.box.com/shared/static/rummpy6q1km1wivomalpkwt2jy28mndf.whl
