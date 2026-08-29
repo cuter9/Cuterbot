@@ -14,7 +14,7 @@ import torch
 from torch import Tensor
 import torchvision
 import torchvision.models as pth_models
-# Jetson nano jetpack does not support torchvision.transforms.v2
+# Jetpack used in Jetson nano jetpack does not support torchvision.transforms.v2
 if int(torchvision.__version__.split(".")[1]) >= 17:
     from torchvision.transforms.v2 import functional as tt_func, InterpolationMode
     import torchvision.transforms.v2 as tf
