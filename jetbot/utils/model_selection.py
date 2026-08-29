@@ -237,7 +237,6 @@ def load_pth_model(pth_model_name, weights_cls, pretrained):
         return model, None
 
 def load_timm_model(timm_model_name, pretrained=True):
-    # model_config = timm.models.mobilenetv3.default_cfgs[timm_model_name].default_with_tag
     model = timm.create_model(timm_model_name, pretrained=pretrained)
     if not pretrained:
         return model, None
@@ -249,7 +248,7 @@ def load_timm_model(timm_model_name, pretrained=True):
     if hasattr(model_config, "interpolation"):
         model_config.interpolation = str_to_interp_mode(model_config.interpolation)
     classifier_preprocess = ClassifierPreprocess(model_config=model_config)
-    # preprocess = [model_config, classifier_preprocess]
+
     preprocess = [classifier_preprocess.config, classifier_preprocess]
 
     return model, preprocess
@@ -300,9 +299,8 @@ def load_model(pth_model_name="resnet18", pretrained=True):
         elif "large" in pth_model_name:
             timm_model_name="mobilenetv4_conv_large"
 
-        # model_config = timm.models.mobilenetv3.default_cfgs[timm_model_name].default_with_tag
         model, preprocess = load_timm_model(timm_model_name, pretrained)
-        dd = {'device':None , 'dtype': None}
+        ## dd = {'device':None , 'dtype': None}
         # model.classifier = Linear(model.head_hidden_size, 2, **dd)
         model.classifier = torch.nn.Linear(model.head_hidden_size, 2)
 
@@ -418,7 +416,11 @@ def load_model(pth_model_name="resnet18", pretrained=True):
 
     else:
         assert (
-                model is not None and model_type is not None), "Check if the model name set is compatible with torchvision."
+                model is not None and model_type is not None), \
+            f"Check if the model with the model name you set is available in the torchvision package of the version {torchvision.__version__}."
+
+    assert (model is not None), \
+        f"Check if the model with the model name you set is available in the torchvision package of the version {torchvision.__version__}."
 
     return model, model_type, preprocess
 
@@ -496,17 +498,3 @@ class model_selection(HasTraits):
 
             # self.selected_model_path = os.path.join(MODEL_REPO_DIR_DOCKER, self.model_path.split("/", 1)[1])
         # print(self.selected_model_path)
-
-    # def selected(self, change):
-    #     self.is_selected = change['new']
-
-
-'''
-ms = trt_model_selection()
-# ms.model_function = 'object detection'
-# ms.model_type = 'SSD_FPN'
-# model_type_list = ms.update_model_type_list()
-model_path_list = ms.update_model_list()
-print(ms.model_function_list, ms.model_type_list)
-print(model_path_list)
-'''
