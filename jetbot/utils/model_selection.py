@@ -1,12 +1,8 @@
 import pandas as pd
 import os
 
-from PIL.ImageTransform import Transform
-from sympy import true
-from timm.data import str_to_interp_mode
-
 from traitlets import HasTraits, Unicode, List, Bool
-# import numpy as np
+
 from typing import Optional, Tuple
 from types import SimpleNamespace
 
@@ -25,7 +21,7 @@ else:
 
 # timm version '0.6.12' for nano
 import timm
-# from timm.layers import Linear
+from timm.data import str_to_interp_mode
 
 HEAD_LIST = ['model_function', 'model_type', 'model_path', 'preprocess_nano_path', "preprocess_path"]
 # MODEL_REPO_DIR = os.path.join(os.environ["HOME"], "model_repo")

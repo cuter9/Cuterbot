@@ -5,10 +5,10 @@ import cv2
 
 import numpy as np
 import torch
-import torchvision
-import torchvision.transforms as transforms
+
 from traitlets import HasTraits, Float, Unicode
 import traitlets
+
 from jetbot import Camera, bgr8_to_jpeg
 from jetbot import Robot
 from jetbot.utils.model_selection import load_model, ClassifierPreprocessV1
@@ -71,13 +71,6 @@ class RoadCruiser(HasTraits):
         self.cruiser_model_pth.load_state_dict(torch.load(self.cruiser_model))
         self.cruiser_model_preprocess_pth = torch.load(self.cruiser_model_preprocess)
 
-        # load preprocess for loaded cruiser model
-        # if self.cruiser_model_preprocess_pth is None:  # load pre-stored preprocess module of the trained model
-        #    self.preprocess = tv_classifier_preprocess()
-        #    # use weights_only=True, ref: https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models
-        #    self.preprocess.load_state_dict(torch.load(self.cruiser_model_preprocess))
-        #else:  # used the preprocess from load_tune_pth_model
-        #　self.preprocess = self.cruiser_model_preprocess_pth[0]
         model_config = self.cruiser_model_preprocess_pth
         self.preprocess = ClassifierPreprocessV1(model_config)
 
@@ -87,20 +80,11 @@ class RoadCruiser(HasTraits):
             self.device = torch.device('cuda')
             self.cruiser_model_pth.to(self.device)
             self.cruiser_model_pth.eval().half()
-            # self.preprocess.to(self.device)
-            # self.preprocess.eval().half()
-            # self.preprocess
 
         elif self.use_gpu == 'cpu':
             self.device = torch.device('cpu')
             self.cruiser_model_pth.to(self.device)
             self.cruiser_model_pth.eval()
-            # self.preprocess.to(self.device)
-            # self.preprocess.eval()
-
-        # self.cruiser_model = self.cruiser_model.float()
-        # self.cruiser_model = self.cruiser_model.to(self.device, dtype=torch.float)
-        # self.cruiser_model = self.cruiser_model.eval()
 
     def select_gpu(self, change):
         self.use_gpu = change['new']
@@ -121,32 +105,6 @@ class RoadCruiser(HasTraits):
         elif self.use_gpu == 'cpu':
             image = self.preprocess(image, is_training=False).to(self.device)
 
-        return image[None, ...]
-
-    def preprocess_rc_1(self, image):
-        mean = None
-        std = None
-        if self.use_gpu == 'gpu':
-            mean = torch.Tensor([0.485, 0.456, 0.406]).to(self.device).half()
-            std = torch.Tensor([0.229, 0.224, 0.225]).to(self.device).half()
-        elif self.use_gpu == 'cpu':
-            mean = torch.Tensor([0.485, 0.456, 0.406]).to(self.device)
-            std = torch.Tensor([0.229, 0.224, 0.225]).to(self.device)
-        # mean = torch.Tensor([0.485, 0.456, 0.406]).cuda()
-        # std = torch.Tensor([0.229, 0.224, 0.225]).cuda()
-        image = PIL.Image.fromarray(image)
-        # resize the cam captured image to (224, 224) for optimal resnet model inference
-        if self.type_cruiser_model == 'inception':
-            image = image.resize((299, 299))
-        else:
-            image = image.resize((224, 224))
-
-        if self.use_gpu == 'gpu':
-            image = transforms.functional.to_tensor(image).to(self.device).half()
-        elif self.use_gpu == 'cpu':
-            image = transforms.functional.to_tensor(image).to(self.device)
-
-        image.sub_(mean[:, None, None]).div_(std[:, None, None])
         return image[None, ...]
 
     def execute_rc(self, change):
