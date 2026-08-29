@@ -1,7 +1,8 @@
 #!/bin/bash
 
 LOG_FILE="$HOME"/Cuterbot/docker/docker_build_.log
-> $LOG_FILE
+# shellcheck disable=SC2188
+> "$LOG_FILE"
 
 # shellcheck disable=SC2164
 cd "$HOME"/Cuterbot/docker
@@ -15,4 +16,5 @@ cd camera && ./build.sh && cd .. >> $LOG_FILE
 ./disable.sh
 docker image prune -f
 
+# shellcheck disable=SC2164
 cd "$HOME"
