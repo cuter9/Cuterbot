@@ -73,4 +73,3 @@ def download_files_from_remote(remote_host=REMOTE_HOST, remote_dir=REMOTE_DIR, r
         if transport:
             transport.close()
         print("Connection to Nano closed.")
-
