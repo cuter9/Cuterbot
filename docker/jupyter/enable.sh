@@ -2,14 +2,11 @@ WORKSPACE=$1
 JETBOT_CAMERA=${2:-opencv_gst_camera}
 
 # set default swap limit as unlimited
-if [[ -z "$JETBOT_JUPYTER_MEMORY_SWAP" ]]
-then
+if [[ -z "$JETBOT_JUPYTER_MEMORY_SWAP" ]]; then
 	export JETBOT_JUPYTER_MEMORY_SWAP=-1
 fi
 
-if [[ -z "$JETBOT_JUPYTER_MEMORY" ]]
-then
-
+if [[ -z "$JETBOT_JUPYTER_MEMORY" ]]; then
 	sudo docker run -it -d \
 	    --restart always \
 	    --runtime nvidia \
@@ -30,7 +27,6 @@ then
 	    "$JETBOT_DOCKER_REMOTE"/jetbot:jupyter-"$JETBOT_VERSION"-"$L4T_VERSION"
 
 else
-
 	sudo docker run -it -d \
 	    --restart always \
 	    --runtime nvidia \
@@ -50,5 +46,4 @@ else
 	    --env JETBOT_DEFAULT_CAMERA="$JETBOT_CAMERA" \
       --env DISPLAY="$DISPLAY" \
 	    "$JETBOT_DOCKER_REMOTE"/jetbot:jupyter-"$JETBOT_VERSION"-$L4T_VERSION
-
 fi

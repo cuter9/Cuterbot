@@ -9,18 +9,18 @@ L4T_REVISION=$(echo "$L4T_VERSION_STRING" | cut -f 2 -d ',' | grep -Po '(?<=REVI
 
 export L4T_VERSION="$L4T_RELEASE.$L4T_REVISION"
 
-if [[ $L4T_VERSION = "32.4.3" ]]
-then
+if [[ $L4T_VERSION = "32.4.3" ]]; then
 	JETBOT_BASE_IMAGE=nvcr.io/nvidia/l4t-pytorch:r32.4.3-pth1.6-py3
-elif [[ "$L4T_VERSION" == "32.4.4" ]]
-then
+
+elif [[ "$L4T_VERSION" == "32.4.4" ]]; then
 	JETBOT_BASE_IMAGE=nvcr.io/nvidia/l4t-pytorch:r32.4.4-pth1.6-py3
-elif [[ "$L4T_VERSION" == "32.5.0" ]] || [[ "$L4T_VERSION" == "32.5.1" ]]
-then
+
+elif [[ "$L4T_VERSION" == "32.5.0" ]] || [[ "$L4T_VERSION" == "32.5.1" ]]; then
 	JETBOT_BASE_IMAGE=nvcr.io/nvidia/l4t-pytorch:r32.5.0-pth1.6-py3
-elif [[ "$L4T_VERSION" == "32.7.4" ]] || [[ "$L4T_VERSION" == "32.7.5" ]] || [[ "$L4T_VERSION" == "32.7.6" ]] || [[ "$L4T_VERSION" == "32.7.1" ]]
-then
+
+elif [[ "$L4T_VERSION" == "32.7.4" ]] || [[ "$L4T_VERSION" == "32.7.5" ]] || [[ "$L4T_VERSION" == "32.7.6" ]] || [[ "$L4T_VERSION" == "32.7.1" ]]; then
 	JETBOT_BASE_IMAGE=nvcr.io/nvidia/l4t-pytorch:r32.7.1-pth1.10-py3
+
 else
 	echo "JETBOT_BASE_IMAGE not found for ${L4T_VERSION}.  Please manually set the JETBOT_BASE_IMAGE environment variable. (ie: export JETBOT_BASE_IMAGE=...)"
 fi
@@ -40,8 +40,7 @@ sudo systemctl enable docker
 # check system memory
 SYSTEM_RAM_KILOBYTES=$(awk '/^MemTotal:/{print $2}' /proc/meminfo)
 
-if [ "$SYSTEM_RAM_KILOBYTES" -lt 3000000 ]
-then
+if [ "$SYSTEM_RAM_KILOBYTES" -lt 3000000 ]; then
     export JETBOT_JUPYTER_MEMORY=500m
     export JETBOT_JUPYTER_MEMORY_SWAP=3G
 fi
