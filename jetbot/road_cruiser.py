@@ -55,10 +55,6 @@ class RoadCruiser(HasTraits):
         self.device = None
 
     def load_road_cruiser(self, change):
-        # The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
-        # self.cruiser_model_pth = None
-        # self.cruiser_model_type_pth = None
-
         pth_model_name = self.cruiser_model.split('/')[-1].split('.')[0].split('_', 4)[-1].split('-')[0]
         print('pytorch model name: %s' % pth_model_name)
         self.cruiser_model_pth, self.cruiser_model_type_pth, self.cruiser_model_preprocess_pth = load_model(
