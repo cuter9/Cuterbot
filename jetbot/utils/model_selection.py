@@ -223,8 +223,8 @@ def load_pth_model(pth_model_name, weights_cls, pretrained):
             model = getattr(pth_models, pth_model_name)(pretrained=pretrained, aux_logits=True) \
                 if pth_model_name in ['googlenet', 'inception_v3'] \
                 else getattr(pth_models, pth_model_name)(pretrained=pretrained)
-            print("The  model is load from torchvision with version less then 0.13. \n"
-                  "The preprocess is get from the pretrained weights of torchvision with version >= 0.13 (it is recommended!)")
+            print(f"The  model is loaded from torchvision with version {torchvision.__version__}. \n"
+                  "The preprocess of the pretrained weights of torchvision with version >= 0.13 is not applicable!")
             preprocess = None
         return model, preprocess
     else:
@@ -236,8 +236,8 @@ def load_pth_model(pth_model_name, weights_cls, pretrained):
             model = getattr(pth_models, pth_model_name)(pretrained=pretrained, aux_logits=True) \
                 if pth_model_name in ['googlenet', 'inception_v3'] \
                 else getattr(pth_models, pth_model_name)(pretrained=pretrained)
-            print("The  model is loaded from torchvision with version less then 0.13 ! \n"
-                  "The preprocess pre-stored from the pretrained weights of torchvision with version >= 0.13 will be used!")
+            print(f"The model is loaded from torchvision with version {torchvision.__version__}! \n"
+                  "The preprocess of the pretrained weights of torchvision with version >= 0.13 is not applicable!")
         return model, None
 
 def load_timm_model(timm_model_name, pretrained=True):
@@ -258,7 +258,7 @@ def load_timm_model(timm_model_name, pretrained=True):
 
     return model, preprocess
 
-def load_tune_pth_model(pth_model_name="resnet18", pretrained=True):
+def load_model(pth_model_name="resnet18", pretrained=True):
     preprocess = None
     model_type = None
     model = None

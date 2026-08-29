@@ -11,7 +11,7 @@ from traitlets import HasTraits, Float, Unicode
 import traitlets
 from jetbot import Camera, bgr8_to_jpeg
 from jetbot import Robot
-from jetbot.utils.model_selection import load_tune_pth_model, ClassifierPreprocessV1
+from jetbot.utils.model_selection import load_model, ClassifierPreprocessV1
 
 class RoadCruiser(HasTraits):
     cruiser_model = Unicode(default_value='').tag(config=True)
@@ -61,7 +61,7 @@ class RoadCruiser(HasTraits):
 
         pth_model_name = self.cruiser_model.split('/')[-1].split('.')[0].split('_', 4)[-1].split('-')[0]
         print('pytorch model name: %s' % pth_model_name)
-        self.cruiser_model_pth, self.cruiser_model_type_pth, self.cruiser_model_preprocess_pth = load_tune_pth_model(
+        self.cruiser_model_pth, self.cruiser_model_type_pth, self.cruiser_model_preprocess_pth = load_model(
             pth_model_name=pth_model_name,
             pretrained=False)
 
