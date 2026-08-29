@@ -18,8 +18,6 @@ RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
 
 RUN apt-get update && apt-get install -y net-tools nano cmake python3-tk apt-utils
 
-
-
 # ==================
 # INSTALL TENSORFLOW
 # ==================
