@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 
 
-def dataset_splitter(src_dir, dest_dir, test_ratio=0.8):
+def dataset_splitter(src_dir, dest_dir, test_ratio=0.1):
     src = Path(src_dir)
     dest = Path(dest_dir)
     if os.path.isdir(dest):
@@ -38,6 +38,6 @@ def dataset_splitter(src_dir, dest_dir, test_ratio=0.8):
     print(f"-> 測試集 (test): {len(test_files)} 張")
 
 # 使用範例：
-# split_flat_dataset("./my_dataset", "./clean_output", train_ratio=0.8)
+# split_flat_dataset("./my_dataset", "./clean_output", test_ratio=0.2)
 
 
