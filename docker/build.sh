@@ -12,8 +12,9 @@ base_img=$(docker images --format "{{.Tag}}" | grep "^base.*") >> "$LOG_FILE"
 if [[ -z "$base_img" || "$1" == "re_base" ]]; then
   echo -e "\e[48;5;172m Building bsae image! \e[0m"
   cd base && ./build.sh && cd .. >> "$LOG_FILE"
+else
+  echo -e "\e[48;5;172m The base image will not be built! \e[0m"
 fi
-echo -e "\e[48;5;172m The base image will not be built! \e[0m"
 # shellcheck disable=SC2129
 
 echo -e "\e[48;5;172m Building jetbo image! \e[0m"
