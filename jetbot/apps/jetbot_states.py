@@ -33,7 +33,9 @@ class nano_states:
     def __init__(self):
         self.jetson = jtop()
         self.jetson.start()
-        self.jetson.jetson_clocks =True
+        while not self.jetson.ok():
+            pass
+        self.jetson.jetson_clocks = True
         self.jetson.jetson_clocks_enabled = True
         self.jetson.fan.speed = 50
 
