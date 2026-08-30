@@ -15,10 +15,18 @@ if [[ -z "$base_img" || "$1" == "re_base" ]]; then
 fi
 echo -e "\e[48;5;172m The base image will not be built! \e[0m"
 # shellcheck disable=SC2129
+
+echo -e "\e[48;5;172m Building jetbo image! \e[0m"
 cd jetbot && ./build.sh && cd .. >> "$LOG_FILE"
 # cd models && ./build.sh && cd .. >> $LOG_FILE
+
+echo -e "\e[48;5;172m Building display image! \e[0m"
 cd display && ./build.sh && cd .. >> "$LOG_FILE"
+
+echo -e "\e[48;5;172m Building jupyter lab image! \e[0m"
 cd jupyter && ./build.sh && cd .. >> "$LOG_FILE"
+
+echo -e "\e[48;5;172m Building camera image! \e[0m"
 cd camera && ./build.sh &&  cd .. >> "$LOG_FILE"
 
 ./disable.sh
