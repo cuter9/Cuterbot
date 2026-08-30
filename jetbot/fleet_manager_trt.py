@@ -11,7 +11,6 @@ from traitlets import Float, Bool, Any
 
 import time
 
-
 def norm(vec):
     """Computes the length of the 2D vector"""
     return np.sqrt(vec[0] ** 2 + vec[1] ** 2)
