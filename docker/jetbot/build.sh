@@ -1,4 +1,5 @@
 docker build \
     --build-arg BASE_IMAGE="$JETBOT_DOCKER_REMOTE"/jetbot:base-"$JETBOT_VERSION"-$L4T_VERSION \
     -t "$JETBOT_DOCKER_REMOTE"/jetbot:jetbot-"$JETBOT_VERSION"-"$L4T_VERSION" \
-    -f Dockerfile .
+    -f Dockerfile \
+    ../..  # jetbot repo root as context
