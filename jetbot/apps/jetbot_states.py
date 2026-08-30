@@ -33,6 +33,8 @@ class nano_states:
     def __init__(self):
         self.jetson = jtop()
         self.jetson.start()
+        self.jetson.jetson_clocks =True
+        self.jetson.jetson_clocks_enabled = True
 
     @property
     def pwr_states(self):
@@ -46,7 +48,6 @@ class nano_states:
             return {"in_volt": in_voltage,
                     "in_current": in_current,
                     "in_pwr": in_power}
-
 
 class jetbot_states:
     def __init__(self):
@@ -66,7 +67,6 @@ class jetbot_states:
                 "shunt_volt": shunt_voltage,
                 "bus_volt": bus_voltage,
                 "in_pwr": in_power}
-
 
 '''
 if __name__ == '__main__':
