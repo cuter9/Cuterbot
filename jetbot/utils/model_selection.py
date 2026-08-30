@@ -210,29 +210,41 @@ def load_pth_model(pth_model_name, weights_cls, pretrained):
                 # preprocess = [model_config, classifier_preprocess]
                 preprocess = [classifier_preprocess.config, classifier_preprocess]
             except AttributeError as err:
-                print("Attribute Error - %s \n" % err, ', Check weights class ( %s ) is correct or not!' % weights_cls)
-
-            model = getattr(pth_models, pth_model_name)(weights=weights, aux_logits=True) \
-                if pth_model_name in ['googlenet', 'inception_v3'] \
-                else getattr(pth_models, pth_model_name)(weights=weights) # for fine-tuning
+                print(f"Attribute Error - {err}! \n"
+                      f" Check weights class ( {weights_cls} ) is correct and "
+                      f"is available in the torchvision with version {torchvision.__version__}!.!")
+            try:
+                model = getattr(pth_models, pth_model_name)(weights=weights, aux_logits=True) \
+                    if pth_model_name in ['googlenet', 'inception_v3'] \
+                    else getattr(pth_models, pth_model_name)(weights=weights) # for fine-tuning
+            except AttributeError as err:
+                f"Check {pth_model_name} is available in the torchvision with version {torchvision.__version__}!.!"
         else:
-            model = getattr(pth_models, pth_model_name)(pretrained=pretrained, aux_logits=True) \
-                if pth_model_name in ['googlenet', 'inception_v3'] \
-                else getattr(pth_models, pth_model_name)(pretrained=pretrained)
+            try:
+                model = getattr(pth_models, pth_model_name)(pretrained=pretrained, aux_logits=True) \
+                    if pth_model_name in ['googlenet', 'inception_v3'] \
+                    else getattr(pth_models, pth_model_name)(pretrained=pretrained)
+            except AttributeError as err:
+                print(f"Attribute Error - {err}! \n"
+                      f" Check {pth_model_name} is available in the torchvision with version {torchvision.__version__}!.!")
             print(f"The  model is loaded from torchvision with version {torchvision.__version__}. \n"
                   "The preprocess of the pretrained weights of torchvision with version >= 0.13 is not applicable!")
             preprocess = None
         return model, preprocess
     else:
-        if weights_cls:
-            model = getattr(pth_models, pth_model_name)(weights=None, aux_logits=True) \
-                if pth_model_name in ['googlenet', 'inception_v3'] \
-                else getattr(pth_models, pth_model_name)(weights=None)  # for fine-tuning
-        else:
-            model = getattr(pth_models, pth_model_name)(pretrained=pretrained, aux_logits=True) \
-                if pth_model_name in ['googlenet', 'inception_v3'] \
-                else getattr(pth_models, pth_model_name)(pretrained=pretrained)
-            print(f"The model is loaded from torchvision with version {torchvision.__version__}! \n"
+        try:
+            if weights_cls:
+                model = getattr(pth_models, pth_model_name)(weights=None, aux_logits=True) \
+                    if pth_model_name in ['googlenet', 'inception_v3'] \
+                    else getattr(pth_models, pth_model_name)(weights=None)  # for fine-tuning
+            else:
+                model = getattr(pth_models, pth_model_name)(pretrained=False, aux_logits=True) \
+                    if pth_model_name in ['googlenet', 'inception_v3'] \
+                    else getattr(pth_models, pth_model_name)(pretrained=False)
+        except AttributeError as err:
+            print(f"Attribute Error - {err}! \n"
+                  f" Check {pth_model_name} is available in the torchvision with version {torchvision.__version__}!.!")
+        print(f"The model is loaded from torchvision with version {torchvision.__version__}! \n"
                   "The preprocess of the pretrained weights of torchvision with version >= 0.13 is not applicable!")
         return model, None
 
