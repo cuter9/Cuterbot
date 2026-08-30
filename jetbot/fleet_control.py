@@ -7,7 +7,7 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 import torchvision.models.detection as detection
-import torchvision.models as models
+
 import torchvision.transforms as tf
 import numpy as np
 

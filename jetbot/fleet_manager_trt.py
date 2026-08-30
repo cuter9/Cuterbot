@@ -1,37 +1,13 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# # Object Following - Live Demo
-# 
-# In this notebook we'll show how you can follow an object with JetBot!  We'll use a pre-trained neural network
-# that was trained on the [COCO dataset](http://cocodataset.org) to detect 90 different common objects.  These include
-# 
-# * Person (index 0)
-# * Cup (index 47)
-# 
-# and many others (you can check [this file](https://github.com/tensorflow/models/blob/master/research/object_detection/data/mscoco_complete_label_map.pbtxt) for a full list of class indices).  The model is sourced from the [TensorFlow object detection API](https://github.com/tensorflow/models/tree/master/research/object_detection),
-# which provides utilities for training object detectors for custom tasks also!  Once the model is trained, we optimize it using NVIDIA TensorRT on the Jetson Nano.
-# 
-# This makes the network very fast, capable of real-time execution on Jetson Nano!  We won't run through all of the training and optimization steps in this notebook though.
-# 
-# Anyways, let's get started.  First, we'll want to import the ``ObjectDetector`` class which takes our pre-trained SSD engine.
-
-# ### Compute detections on single camera image
-
-# In[ ]:
-
-# from queue import Empty
-import cv2
-import numpy as np
-# import traitlets
-from traitlets import Float, Bool, Any
-
 from jetbot import Camera
 from jetbot import Robot
 from jetbot import bgr8_to_jpeg
 from jetbot import ObjectFollower
 from jetbot import RoadCruiserTRT
 # from jetbot.utils import get_cls_dict_yolo, get_cls_dict_ssd
+import cv2
+import numpy as np
+
+from traitlets import Float, Bool, Any
 
 import time
 

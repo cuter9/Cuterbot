@@ -22,8 +22,9 @@
 
 # from queue import Empty
 import torch
-import torchvision
 import torch.nn.functional as F
+import torchvision
+
 import cv2
 import numpy as np
 import traitlets

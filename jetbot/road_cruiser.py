@@ -1,10 +1,11 @@
 import time
 
+import torch
+
 import PIL.Image
 import cv2
 
 import numpy as np
-import torch
 
 from traitlets import HasTraits, Float, Unicode
 import traitlets
