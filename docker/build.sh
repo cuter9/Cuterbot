@@ -13,7 +13,7 @@ if [[ -z "$base_img" || "$1" == "re_base" ]]; then
   echo -e "\e[48;5;172m Building bsae image! \e[0m"
   cd base && ./build.sh && cd .. >> "$LOG_FILE"
 fi
-echo -e "\e[48;5;172m bsae image will not be build! \e[0m"
+echo -e "\e[48;5;172m The base image will not be built! \e[0m"
 # shellcheck disable=SC2129
 cd jetbot && ./build.sh && cd .. >> "$LOG_FILE"
 # cd models && ./build.sh && cd .. >> $LOG_FILE
