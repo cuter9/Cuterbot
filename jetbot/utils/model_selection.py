@@ -224,13 +224,15 @@ def load_pth_model(pth_model_name, weights_cls, pretrained):
                 model = getattr(pth_models, pth_model_name)(pretrained=pretrained, aux_logits=True) \
                     if pth_model_name in ['googlenet', 'inception_v3'] \
                     else getattr(pth_models, pth_model_name)(pretrained=pretrained)
+                print(f"The  model is loaded from torchvision with version {torchvision.__version__}. \n"
+                      "The preprocess of the pretrained weights of torchvision with version >= 0.13 is not applicable!")
+
+                preprocess = None
+                return model, preprocess
+
             except AttributeError as err:
                 print(f"Attribute Error - {err}! \n"
                       f" Check {pth_model_name} is available in the torchvision with version {torchvision.__version__}!.!")
-            print(f"The  model is loaded from torchvision with version {torchvision.__version__}. \n"
-                  "The preprocess of the pretrained weights of torchvision with version >= 0.13 is not applicable!")
-            preprocess = None
-        return model, preprocess
     else:
         try:
             if weights_cls:
@@ -241,12 +243,14 @@ def load_pth_model(pth_model_name, weights_cls, pretrained):
                 model = getattr(pth_models, pth_model_name)(pretrained=False, aux_logits=True) \
                     if pth_model_name in ['googlenet', 'inception_v3'] \
                     else getattr(pth_models, pth_model_name)(pretrained=False)
+
+            print(f"The model is loaded from torchvision with version {torchvision.__version__}! \n"
+                  "The preprocess of the pretrained weights of torchvision with version >= 0.13 is not applicable!")
+            return model, None
+
         except AttributeError as err:
             print(f"Attribute Error - {err}! \n"
                   f" Check {pth_model_name} is available in the torchvision with version {torchvision.__version__}!.!")
-        print(f"The model is loaded from torchvision with version {torchvision.__version__}! \n"
-                  "The preprocess of the pretrained weights of torchvision with version >= 0.13 is not applicable!")
-        return model, None
 
 def load_timm_model(timm_model_name, pretrained=True):
     model = timm.create_model(timm_model_name, pretrained=pretrained)
