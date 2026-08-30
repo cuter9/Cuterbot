@@ -91,7 +91,6 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
         # self.fps = []
 
     def execute_fm(self, change):
-
         # do the object following
         start_time = time.time()
         self.execute(change)
@@ -99,10 +98,11 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
         # self.execution_time.append(end_time - start_time + self.capturer.cap_time)
         self.execution_time_fm.append(end_time - start_time)
         # self.fps.append(1/(end_time - start_time))
+        self.execute_rc(change)
 
         # if the closest object is not detected and followed, perform the road cruising
         if not self.is_detected:
-            self.execute_rc(change)
+            # self.execute_rc(change)
             self.speed_fm = self.speed_rc  # set fleet mge speed to road cruising speed (self.speed)
 
     def start_fm(self, change):
