@@ -36,7 +36,7 @@ class nano_states:
         while not self.jetson.ok():
             pass
         self.jetson.jetson_clocks = True
-        self.jetson.jetson_clocks.boot = True
+        #self.jetson.jetson_clocks.boot = True
         self.jetson.fan.speed = 50
 
     @property
