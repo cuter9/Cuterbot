@@ -42,7 +42,7 @@ def download_files_from_remote(remote_host=REMOTE_HOST, remote_dir=REMOTE_DIR, r
             print(f"Downloading: {remote_file_path} ...")
             sftp.get(remote_file_path, local_file_path)
         else:
-            print(f"Can not download the dataset! Check {remote_file_path} is a dataset file path or is existing?")
+            print(f"Can not download the dataset! Check {remote_file_path} is a dataset file path or is existing on the remote host.?")
 
         '''
         # List files in the remote directory
