@@ -8,7 +8,7 @@ LOG_FILE="$HOME"/Cuterbot/docker/docker_build_.log
 cd "$HOME"/Cuterbot/docker
 source ./configure.sh >> $LOG_FILE
 # docker images --format "{{.Repository}}:{{.Tag}}" | grep -q ":base.*"
-base_img=$(docker images --format "{{.Tag}}" | grep "^base.*") >> "$LOG_FILE" 2>&1
+base_img=$(docker images --format "{{.Tag}}" | grep "^base.*") >> "$LOG_FILE"
 if [[ -z "$base_img" || "$1" == "re_base" ]]; then
   echo -e "\e[48;5;172m Building bsae image! \e[0m"
   cd base && ./build.sh && cd .. >> "$LOG_FILE"
