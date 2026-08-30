@@ -35,6 +35,7 @@ class nano_states:
         self.jetson.start()
         self.jetson.jetson_clocks =True
         self.jetson.jetson_clocks_enabled = True
+        self.jetson.fan.speed = 50
 
     @property
     def pwr_states(self):
