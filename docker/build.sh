@@ -8,6 +8,7 @@ LOG_FILE="$HOME"/Cuterbot/docker/docker_build_.log
 cd "$HOME"/Cuterbot/docker
 source ./configure.sh >> $LOG_FILE
 cd base && ./build.sh && cd .. >> $LOG_FILE
+cd jetbot && ./build.sh && cd .. >> $LOG_FILE
 # cd models && ./build.sh && cd .. >> $LOG_FILE
 cd display && ./build.sh && cd .. >> $LOG_FILE
 cd jupyter && ./build.sh && cd .. >> $LOG_FILE
