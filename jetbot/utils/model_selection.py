@@ -254,7 +254,12 @@ def load_pth_model(pth_model_name, weights_cls, pretrained):
 
     return model, preprocess
 def load_timm_model(timm_model_name, pretrained=True):
-    model = timm.create_model(timm_model_name, pretrained=pretrained)
+    model = None
+    try:
+        model = timm.create_model(timm_model_name, pretrained=pretrained)
+    except RuntimeError as err:
+        print(f"{err}")
+
     if not pretrained:
         return model, None
     model_config = timm.get_pretrained_cfg(timm_model_name)
