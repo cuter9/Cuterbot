@@ -297,8 +297,9 @@ def load_model(pth_model_name="resnet18", pretrained=True):
             weights_cls = pth_model_name.replace("resnet", "ResNet") + "_Weights"
 
         model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
-        model.fc = torch.nn.Linear(model.fc.in_features,
-                                   2)  # for resnet model must add block expansion factor 4
+        if model is not None:
+            model.fc = torch.nn.Linear(model.fc.in_features,
+                                       2) # for resnet model must add block expansion factor 4
 
     elif 'mobilenet_v3' in pth_model_name:  # 'mobilenet_v3_large' or  'mobilenet_v3_small'
         model_type = "MobileNet"
@@ -312,8 +313,9 @@ def load_model(pth_model_name="resnet18", pretrained=True):
                 assert weights_cls is not None, "Check the use of the name of the torch model!"
 
         model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
-        model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features,
-                                              2)  # for mobilenet_v3 model. must add block expansion factor 4
+        if model is not None:
+            model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features,
+                                                  2)  # for mobilenet_v3 model. must add block expansion factor 4
     elif "mobilenetv4" in pth_model_name:
         model_type = "MobileNet"
         # mobilenetv4 is included in timm.models.mobilenetv3
@@ -331,7 +333,8 @@ def load_model(pth_model_name="resnet18", pretrained=True):
         model, preprocess = load_timm_model(timm_model_name, pretrained)
         ## dd = {'device':None , 'dtype': None}
         # model.classifier = Linear(model.head_hidden_size, 2, **dd)
-        model.classifier = torch.nn.Linear(model.head_hidden_size, 2)
+        if model is not None:
+            model.classifier = torch.nn.Linear(model.head_hidden_size, 2)
 
     # for mobilenet_v2 model. must add block expansion factor 4
     elif pth_model_name == 'mobilenet_v2':
@@ -341,7 +344,8 @@ def load_model(pth_model_name="resnet18", pretrained=True):
             weights_cls = "MobileNet_V2_Weights"
 
         model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
-        model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features,
+        if model is not None:
+            model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features,
                                               2)  # for mobilenet_v2 model. must add block expansion factor 4
 
     elif pth_model_name == 'vgg11':  # VGGNet
@@ -351,7 +355,8 @@ def load_model(pth_model_name="resnet18", pretrained=True):
             weights_cls = "VGG11_Weights"
 
         model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
-        model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features,
+        if model is not None:
+            model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features,
                                               2)  # for VGG model. must add block expansion factor 4
 
     elif 'efficientnet' in pth_model_name:  # ResNet
@@ -370,7 +375,8 @@ def load_model(pth_model_name="resnet18", pretrained=True):
                 raise ValueError(f"Unsupported model type {pth_model_name}")
 
         model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
-        model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)  # for efficientnet model
+        if model is not None:
+            model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)  # for efficientnet model
         # model.classifier[0].dropout = torch.nn.Dropout(p=dropout)
 
     elif pth_model_name == 'inception_v3':  # Inception_v3
@@ -381,9 +387,10 @@ def load_model(pth_model_name="resnet18", pretrained=True):
 
         model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         # model.dropout = torch.nn.Dropout(p=dropout)
-        model.fc = torch.nn.Linear(model.fc.in_features, 2)
-        if model.aux_logits:
-            model.AuxLogits.fc = torch.nn.Linear(model.AuxLogits.fc.in_features, 2)
+        if model is not None:
+            model.fc = torch.nn.Linear(model.fc.in_features, 2)
+            if model.aux_logits:
+                model.AuxLogits.fc = torch.nn.Linear(model.AuxLogits.fc.in_features, 2)
 
     elif pth_model_name == 'googlenet':  # Inception_v3
         model_type = "GoogleNet"
@@ -392,13 +399,14 @@ def load_model(pth_model_name="resnet18", pretrained=True):
             weights_cls = "GoogLeNet_Weights"
 
         model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
-        model.fc = torch.nn.Linear(model.fc.in_features, 2)
-        # model.dropout = torch.nn.Dropout(p=dropout)
-        if model.aux_logits:
-            model.aux1.fc2 = torch.nn.Linear(model.aux1.fc2.in_features, 2)
-            model.aux2.fc2 = torch.nn.Linear(model.aux2.fc2.in_features, 2)
-        #   model.aux1.dropout = torch.nn.Dropout(p=dropout)
-        #   model.aux2.dropout = torch.nn.Dropout(p=dropout)
+        if model is not None:
+            model.fc = torch.nn.Linear(model.fc.in_features, 2)
+            # model.dropout = torch.nn.Dropout(p=dropout)
+            if model.aux_logits:
+                model.aux1.fc2 = torch.nn.Linear(model.aux1.fc2.in_features, 2)
+                model.aux2.fc2 = torch.nn.Linear(model.aux2.fc2.in_features, 2)
+            #   model.aux1.dropout = torch.nn.Dropout(p=dropout)
+            #   model.aux2.dropout = torch.nn.Dropout(p=dropout)
 
     elif "densenet" in pth_model_name:  # densenet121, densenet161, densenet169, densenet201
         model_type = "DenseNet"
@@ -407,7 +415,8 @@ def load_model(pth_model_name="resnet18", pretrained=True):
             weights_cls = pth_model_name.replace("densenet", "DenseNet") + "_Weights"
 
         model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
-        model.classifier = torch.nn.Linear(model.classifier.in_features, 2)
+        if model is not None:
+            model.classifier = torch.nn.Linear(model.classifier.in_features, 2)
 
     elif "shufflenet_v2" in pth_model_name:  # shufflenet_v2_x1_0 or shufflenet_v2_x0_5
         model_type = "ShuffleNet"
@@ -416,7 +425,8 @@ def load_model(pth_model_name="resnet18", pretrained=True):
             weights_cls = pth_model_name.replace("shufflenet_v2_x", "ShuffleNet_V2_X") + "_Weights"
 
         model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
-        model.fc = torch.nn.Linear(model.fc.in_features, 2)
+        if model is not None:
+            model.fc = torch.nn.Linear(model.fc.in_features, 2)
 
     elif "mnasnet" in pth_model_name:  # mnasnet1_0 or mnasnet0_5
         model_type = "MnasNet"
@@ -425,7 +435,8 @@ def load_model(pth_model_name="resnet18", pretrained=True):
             weights_cls = pth_model_name.replace("mnasnet", "MNASNet") + "_Weights"
 
         model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
-        model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)
+        if model is not None:
+            model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)
 
     elif "vit" in pth_model_name:  #  vit_b_16,  vit_b_32, vit_l_16, vit_l_32, vit_h_14
         # need to pip install flash-attn --no-build-isolation in linux environment only
@@ -440,8 +451,9 @@ def load_model(pth_model_name="resnet18", pretrained=True):
             weights_cls = ''.join(weights_cls_lst) + "_Weights"
 
         model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
-        # model.fc = torch.nn.Linear(model.fc.in_features, 2)
-        model.heads[-1] = torch.nn.Linear(model.heads[-1].in_features, 2)
+        if model is not None:
+            # model.fc = torch.nn.Linear(model.fc.in_features, 2)
+            model.heads[-1] = torch.nn.Linear(model.heads[-1].in_features, 2)
 
     else:
         assert (
