@@ -260,7 +260,7 @@ def load_timm_model(timm_model_name, pretrained=True):
     try:
         model = timm.create_model(timm_model_name, pretrained=pretrained)
     except RuntimeError as err:
-        print(f"{err}")
+        print(f"The model is not available for this timm version {timm.__version__} :  {err}")
 
     if not pretrained:
         return model, None
