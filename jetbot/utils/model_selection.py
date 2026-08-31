@@ -454,7 +454,7 @@ def load_model(pth_model_name="resnet18", pretrained=True):
         if model is not None:
             # model.fc = torch.nn.Linear(model.fc.in_features, 2)
             model.heads[-1] = torch.nn.Linear(model.heads[-1].in_features, 2)
-
+    '''
     else:
         assert (
                 model is not None and model_type is not None), \
@@ -462,7 +462,7 @@ def load_model(pth_model_name="resnet18", pretrained=True):
 
     assert (model is not None), \
         f"Check if the model with the model name you set is available in the torchvision package of the version {torchvision.__version__}."
-
+    '''
     return model, model_type, preprocess
 
 
