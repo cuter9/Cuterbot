@@ -132,7 +132,6 @@ class ClassifierPreprocess:
                                            tf.Resize(self.resize_size,
                                                    interpolation=self.interpolation,
                                                    antialias=self.antialias),
-                                           tf.RandomRotation(15),
                                            tf.RandomCrop(self.crop_size),
                                            tf.PILToTensor(),
                                            tf.ConvertImageDtype(torch.float),
@@ -464,7 +463,6 @@ def load_model(pth_model_name="resnet18", pretrained=True):
         f"Check if the model with the model name you set is available in the torchvision package of the version {torchvision.__version__}."
     '''
     return model, model_type, preprocess
-
 
 class model_selection(HasTraits):
     model_function = Unicode(default_value='object detection').tag(config=True)
