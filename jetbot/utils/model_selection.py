@@ -253,8 +253,10 @@ def load_pth_model(pth_model_name, weights_cls, pretrained):
                   f" Check {pth_model_name} is available in the torchvision with version {torchvision.__version__}!.!")
 
     return model, preprocess
+
 def load_timm_model(timm_model_name, pretrained=True):
     model = None
+    preprocess = None
     try:
         model = timm.create_model(timm_model_name, pretrained=pretrained)
     except RuntimeError as err:
@@ -262,16 +264,21 @@ def load_timm_model(timm_model_name, pretrained=True):
 
     if not pretrained:
         return model, None
-    model_config = timm.get_pretrained_cfg(timm_model_name)
-    if hasattr(model_config, "input_size"):
-        model_config.resize_size = list(model_config.input_size[1:])
-    if hasattr(model_config, "crop_pct"):
-        model_config.crop_size = ((torch.asarray(model_config.input_size[1:]) * torch.asarray(model_config.crop_pct)).int()).tolist()
-    if hasattr(model_config, "interpolation"):
-        model_config.interpolation = str_to_interp_mode(model_config.interpolation)
-    classifier_preprocess = ClassifierPreprocess(model_config=model_config)
 
-    preprocess = [classifier_preprocess.config, classifier_preprocess]
+    try:
+        model_config = timm.get_pretrained_cfg(timm_model_name)
+        if hasattr(model_config, "input_size"):
+            model_config.resize_size = list(model_config.input_size[1:])
+        if hasattr(model_config, "crop_pct"):
+            model_config.crop_size = ((torch.asarray(model_config.input_size[1:]) * torch.asarray(model_config.crop_pct)).int()).tolist()
+        if hasattr(model_config, "interpolation"):
+            model_config.interpolation = str_to_interp_mode(model_config.interpolation)
+
+        classifier_preprocess = ClassifierPreprocess(model_config=model_config)
+        preprocess = [classifier_preprocess.config, classifier_preprocess]
+
+    except Exception as err:
+        print( f"The configuration of the timm model can not be obtained as required with error: {err}")
 
     return model, preprocess
 
