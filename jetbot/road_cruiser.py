@@ -57,7 +57,6 @@ class RoadCruiser(HasTraits):
         self.device = None
 
     def load_road_cruiser(self, change):
-        is_loaded = True
         pth_model_name = self.cruiser_model.split('/')[-1].split('.')[0].split('_', 4)[-1].split('-')[0]
         print('pytorch model name: %s' % pth_model_name)
         self.cruiser_model_pth, self.cruiser_model_type_pth, self.cruiser_model_preprocess_pth = load_model(
