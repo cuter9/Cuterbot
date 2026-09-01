@@ -67,6 +67,7 @@ class RoadCruiser(HasTraits):
             self.is_loaded = False
             print(
                 f"{pth_model_name} is not available in the current torchvision version {torchvision.__version__}")
+            return
 
         print('path of cruiser model: %s' % self.cruiser_model)
         print('use %s for inference.' % self.use_gpu)
