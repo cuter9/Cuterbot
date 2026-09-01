@@ -126,7 +126,6 @@ class ObjectFollower(ObjectDetector):
 
     def closest_object_detection(self):
         """Finds the detection closest to the image center"""
-        # closest_detection = None
         if len(self.matching_detections) != 0:
             for det in self.matching_detections:
                 # if (norm(object_center_detection(det)) < norm(object_center_detection(self.closest_object)) or self.closest_object) is None:
@@ -136,8 +135,9 @@ class ObjectFollower(ObjectDetector):
                 elif norm(object_center_detection(self.closest_object)) < norm(
                         object_center_detection(self.closest_object)):
                     self.closest_object = det
-
             print(self.closest_object['bbox'])
+        else:
+            self.closest_object = None
         # self.closest_object = closest_detection
 
     def start_of(self, change):
