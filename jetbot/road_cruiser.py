@@ -55,6 +55,7 @@ class RoadCruiser(HasTraits):
         self.execution_time_rc = []
         self.observe(self.select_gpu, names=['use_gpu'])
         self.device = None
+        self.is_loaded = True
 
     def load_road_cruiser(self, change):
         pth_model_name = self.cruiser_model.split('/')[-1].split('.')[0].split('_', 4)[-1].split('-')[0]
@@ -63,10 +64,9 @@ class RoadCruiser(HasTraits):
             pth_model_name=pth_model_name,
             pretrained=False)
         if self.cruiser_model_pth is None:
-            is_loaded = False
+            self.is_loaded = False
             print(
                 f"{pth_model_name} is not available in the current torchvision version {torchvision.__version__}")
-            return is_loaded
 
         print('path of cruiser model: %s' % self.cruiser_model)
         print('use %s for inference.' % self.use_gpu)
@@ -146,8 +146,8 @@ class RoadCruiser(HasTraits):
     # We accomplish that with the observe function.
     def start_rc(self, change):
         # self.execute({'new': self.camera.value})
-        is_loaded = self.load_road_cruiser(change)
-        if is_loaded:
+        self.load_road_cruiser(change)
+        if self.is_loaded:
             print("start running!")
             self.capturer.observe(self.execute_rc, names='value')
         else:
