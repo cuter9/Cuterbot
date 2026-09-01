@@ -6,6 +6,7 @@ import PIL.Image
 import cv2
 
 import numpy as np
+import torchvision
 
 from traitlets import HasTraits, Float, Unicode
 import traitlets
@@ -56,11 +57,18 @@ class RoadCruiser(HasTraits):
         self.device = None
 
     def load_road_cruiser(self, change):
+        is_loaded = True
         pth_model_name = self.cruiser_model.split('/')[-1].split('.')[0].split('_', 4)[-1].split('-')[0]
         print('pytorch model name: %s' % pth_model_name)
         self.cruiser_model_pth, self.cruiser_model_type_pth, self.cruiser_model_preprocess_pth = load_model(
             pth_model_name=pth_model_name,
             pretrained=False)
+
+        if self.cruiser_model_pth is None:
+            is_loaded = False
+            print(
+                f"{pth_model_name} is not available in the current torchvision version {torchvision.__version__}")
+            return is_loaded
 
         print('path of cruiser model: %s' % self.cruiser_model)
         print('use %s for inference.' % self.use_gpu)
@@ -140,9 +148,13 @@ class RoadCruiser(HasTraits):
     # We accomplish that with the observe function.
     def start_rc(self, change):
         # self.execute({'new': self.camera.value})
-        self.load_road_cruiser(change)
-        print("start running!")
-        self.capturer.observe(self.execute_rc, names='value')
+        is_loaded = self.load_road_cruiser(change)
+        if is_loaded:
+            print("start running!")
+            self.capturer.observe(self.execute_rc, names='value')
+        else:
+            print("The model can not be loaded, start stopping!")
+            self.stop_rc(change)
 
     def stop_rc(self, change):
         from jetbot.utils import plot_exec_time

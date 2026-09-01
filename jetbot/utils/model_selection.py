@@ -239,7 +239,7 @@ def load_pth_model(pth_model_name, pretrained):
 
     except AttributeError as err:
         print(f"Attribute Error - {err}! \n"
-              f" Check {pth_model_name} is available in the torchvision with version {torchvision.__version__}!")
+              f"    Check if {pth_model_name} is available in the torchvision with version {torchvision.__version__}!")
 
     if weights_cls:
         try:
@@ -255,9 +255,9 @@ def load_pth_model(pth_model_name, pretrained):
             print(f"Attribute Error - {err}! \n"
                   f" Check weights class ( {weights_cls} ) is correct and "
                   f"is available in the torchvision with version {torchvision.__version__}!")
-
-    print(f"The model is loaded from torchvision with version {torchvision.__version__}! \n"
-          "The preprocess of the pretrained weights of torchvision with version >= 0.13 is not applicable!")
+    else:
+        print(f"The transforms of 'Weights' class is not available from the model torchvision with version {torchvision.__version__}! \n"
+              f"    The 'Weights' class is available from torchvision with version >= 0.13!")
 
     return model, preprocess
 
