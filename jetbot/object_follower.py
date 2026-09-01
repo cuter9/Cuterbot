@@ -51,6 +51,7 @@ def object_center_detection(det):
     """Computes the center x, y coordinates of the object"""
     # print(self.matching_detections)
     bbox = det['bbox']
+    # print(f"object _detection box: {bbox}")
     center_x = (bbox[0] + bbox[2]) / 2.0 - 0.5
     center_y = (bbox[1] + bbox[3]) / 2.0 - 0.5
     object_center = (center_x, center_y)
@@ -125,16 +126,18 @@ class ObjectFollower(ObjectDetector):
 
     def closest_object_detection(self):
         """Finds the detection closest to the image center"""
-        closest_detection = None
+        # closest_detection = None
         if len(self.matching_detections) != 0:
             for det in self.matching_detections:
-                if closest_detection is None:
-                    closest_detection = det
-                elif norm(object_center_detection(det)) < norm(
-                        object_center_detection(closest_detection)):
-                    closest_detection = det
-
-        self.closest_object = closest_detection
+                if (norm(object_center_detection(det)) < norm(object_center_detection(self.closest_object)) or self.closest_object) is None:
+                    self.closest_object = det
+                # if closest_detection is None:
+                #    closest_detection = det
+                #elif norm(object_center_detection(det)) < norm(
+                #        object_center_detection(closest_detection)):
+                #    closest_detection = det
+            print(self.closest_object['bbox'])
+        # self.closest_object = closest_detection
 
     def start_of(self, change):
         self.capturer.unobserve_all()

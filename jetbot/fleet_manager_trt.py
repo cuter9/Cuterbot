@@ -141,7 +141,8 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
             cv2.rectangle(self.current_image, (int(self.img_width * bbox[0]), int(self.img_height * bbox[1])),
                           (int(self.img_width * bbox[2]), int(self.img_height * bbox[3])), (0, 255, 0), 5)
 
-            self.mean_view = 0.4 * (bbox[3] - bbox[1]) + 0.6 * self.mean_view_prev
+            # self.mean_view = 0.4 * (bbox[3] - bbox[1]) + 0.6 * self.mean_view_prev
+            self.mean_view = 0.4 * (bbox[2] - bbox[0]) + 0.6 * self.mean_view_prev
             self.e_view = self.target_view - self.mean_view
             if np.abs(self.e_view / self.target_view) > 0.1:
                 self.speed_fm = self.speed_fm + self.speed_gain_fm * self.e_view + self.speed_dev_fm * (
@@ -151,7 +152,7 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
             self.mean_view_prev = self.mean_view
             self.e_view_prev = self.e_view
 
-        # otherwise go forward if no target detected
+        # otherwise go forward if no target detected for more than self.detect_duration_max times
         if cls_obj is None:
             if self.no_detect <= 0:  # if object is not detected for a duration, road cruising
                 self.mean_view = 0.0
@@ -170,6 +171,7 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
         else:
             # move the robot forward and steer proportional target's x-distance from center
             center = object_center_detection(cls_obj)
+            print(f"closest object bounding box: {cls_obj["bbox"]}; center of object: {center}")
             self.robot.set_motors(
                 float(self.speed_fm + self.turn_gain_fm * center[0] + self.steering_bias_fm),
                 float(self.speed_fm - self.turn_gain_fm * center[0] + self.steering_bias_fm)
