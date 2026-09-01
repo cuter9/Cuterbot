@@ -256,7 +256,7 @@ def load_pth_model(pth_model_name, pretrained):
                   f" Check weights class ( {weights_cls} ) is correct and "
                   f"is available in the torchvision with version {torchvision.__version__}!")
     else:
-        print(f"The transforms of 'Weights' class is not available from the model torchvision with version {torchvision.__version__}! \n"
+        print(f"The 'Weights' class and its transform methods is not available from the model torchvision with version {torchvision.__version__}! \n"
               f"    The 'Weights' class is available from torchvision with version >= 0.13!")
 
     return model, preprocess
