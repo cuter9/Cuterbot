@@ -62,7 +62,6 @@ class RoadCruiser(HasTraits):
         self.cruiser_model_pth, self.cruiser_model_type_pth, self.cruiser_model_preprocess_pth = load_model(
             pth_model_name=pth_model_name,
             pretrained=False)
-
         if self.cruiser_model_pth is None:
             is_loaded = False
             print(
