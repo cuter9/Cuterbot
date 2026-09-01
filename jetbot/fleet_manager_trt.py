@@ -173,8 +173,8 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
             center = object_center_detection(cls_obj)
             print(f"closest object bounding box: {cls_obj["bbox"]}; center of object: {center}")
             self.robot.set_motors(
-                float(self.speed_fm + self.turn_gain_fm * center[0] + self.steering_bias_fm),
-                float(self.speed_fm - self.turn_gain_fm * center[0] + self.steering_bias_fm)
+                float(self.speed_fm + self.turn_gain_fm * center[0] + self.steering_bias_fm),   # left motor
+                float(self.speed_fm - self.turn_gain_fm * center[0] + self.steering_bias_fm)    # right motor
             )
 
         # update image widget
