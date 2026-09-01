@@ -137,6 +137,7 @@ class RoadCruiser(HasTraits):
 
         self.steering_rc = pid + self.steering_bias_rc
 
+        # the speed limit is set by alpha value of Motor Class in robot.py to 0.8
         self.robot.left_motor.value = max(min(self.speed_gain_rc + self.steering_rc, 1.0), 0.0)
         self.robot.right_motor.value = max(min(self.speed_gain_rc - self.steering_rc, 1.0), 0.0)
 

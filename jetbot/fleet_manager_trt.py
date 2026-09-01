@@ -172,6 +172,7 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
         else:
             # move the robot forward and steer proportional target's x-distance from center
             center = object_center_detection(self.closest_object)
+            # the speed limit is set by alpha value of Motor Class in robot.py to 0.8
             left_motor = max(min(float(self.speed_fm + self.turn_gain_fm * center[0] + self.steering_bias_fm), 1.0), -1.0)
             right_motor = max(min(float(self.speed_fm - self.turn_gain_fm * center[0] + self.steering_bias_fm), 1.0), -1.0)
             self.robot.set_motors(left_motor, right_motor)
