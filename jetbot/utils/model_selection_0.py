@@ -5,8 +5,6 @@ from traitlets import HasTraits, Unicode, List, Bool
 
 from typing import Optional, Tuple
 from types import SimpleNamespace
-import re
-import warnings
 
 import torch
 from torch import Tensor
@@ -24,12 +22,6 @@ else:
 # timm version '0.6.12' for nano
 import timm
 from timm.data import str_to_interp_mode
-
-# Define color constants
-GREEN = "\033[32m"
-YELLOW = "\033[33m"
-BLUE = "\033[34m"
-RESET = "\033[0m"  # Crucial: stops the color from leaking
 
 HEAD_LIST = ['model_function', 'model_type', 'model_path', 'preprocess_nano_path', "preprocess_path"]
 # MODEL_REPO_DIR = os.path.join(os.environ["HOME"], "model_repo")
@@ -204,60 +196,62 @@ class ClassifierPreprocess:
                             0.5 * torch.asarray(self.crop_size))
                 return img_tf, offset_tf
 
-def load_pth_model(pth_model_name, pretrained):
+def load_pth_model(pth_model_name, weights_cls, pretrained):
     preprocess = None
     model = None
-    weights_cls = ""
-    try:
-        with warnings.catch_warnings(record=True) as captured_warnings:
-            # Python defaults to showing warnings once, "always" forces it to capture
-            warnings.simplefilter("always")
-            # Run the function that throws console warnings
-            model = getattr(pth_models, pth_model_name)(pretrained=pretrained, aux_logits=True) \
-                if pth_model_name in ['googlenet', 'inception_v3'] \
-                else getattr(pth_models, pth_model_name)(pretrained=pretrained) # for fine-tuning
+    # for fine-tuning
+    if pretrained:
+        if weights_cls:
+            try:
+                weights = getattr(pth_models, weights_cls).DEFAULT
+                weights_transforms = weights.transforms()
+                model_config = weights_transforms
+                model_config.crop_size = [weights_transforms.crop_size[0], weights_transforms.crop_size[0]]
+                model_config.resize_size = [weights_transforms.resize_size[0], weights_transforms.resize_size[0]]
+                classifier_preprocess = ClassifierPreprocess(model_config)
+                # preprocess = [model_config, classifier_preprocess]
+                preprocess = [classifier_preprocess.config, classifier_preprocess]
+            except AttributeError as err:
+                print(f"Attribute Error - {err}! \n"
+                      f" Check weights class ( {weights_cls} ) is correct and "
+                      f"is available in the torchvision with version {torchvision.__version__}!")
 
-        for w in captured_warnings:
-            # --- KEEP THE ORIGINAL CONSOLE OUTPUT ---
-            warnings.showwarning(
-                message=w.message,
-                category=w.category,
-                filename=w.filename,
-                lineno=w.lineno,
-                file=w.file,
-                line=w.line
-            )
-            if issubclass(w.category, UserWarning):
-                message = str(w.message)
-                # print(f"The warning get when load the model from torchvision with version {torchvision.__version__} :  {message}")
-                str_warn = str(message)
-                str_weights = re.findall(r'`(weights=[^`]*)`', str_warn)
-                if str_weights:
-                    weights = [sw.replace("weights=", "").split(".")[0] for sw in str_weights]
-                    weights_cls = str(weights[0])
-                    print(f"{YELLOW}The weights class '{weights_cls}' get from the model {pth_model_name} loaded from torchvision with version {torchvision.__version__} {RESET}")
+            try:
+                model = getattr(pth_models, pth_model_name)(weights=weights, aux_logits=True) \
+                    if pth_model_name in ['googlenet', 'inception_v3'] \
+                    else getattr(pth_models, pth_model_name)(weights=weights) # for fine-tuning
+            except AttributeError as err:
+                f"Check {pth_model_name} is available in the torchvision with version {torchvision.__version__}!"
 
-    except AttributeError as err:
-        print(f"Attribute Error - {err}! \n"
-              f" Check {pth_model_name} is available in the torchvision with version {torchvision.__version__}!")
+        else:
+            try:
+                model = getattr(pth_models, pth_model_name)(pretrained=pretrained, aux_logits=True) \
+                    if pth_model_name in ['googlenet', 'inception_v3'] \
+                    else getattr(pth_models, pth_model_name)(pretrained=pretrained)
+                print(f"The  model is loaded from torchvision with version {torchvision.__version__}. \n"
+                      "The preprocess of the pretrained weights of torchvision with version >= 0.13 is not applicable!")
 
-    if weights_cls:
+            except AttributeError as err:
+                print(f"Attribute Error - {err}! \n"
+                      f" Check {pth_model_name} is available in the torchvision with version {torchvision.__version__}!")
+
+    else:
         try:
-            weights = getattr(pth_models, weights_cls).DEFAULT
-            weights_transforms = weights.transforms()
-            model_config = weights_transforms
-            model_config.crop_size = [weights_transforms.crop_size[0], weights_transforms.crop_size[0]]
-            model_config.resize_size = [weights_transforms.resize_size[0], weights_transforms.resize_size[0]]
-            classifier_preprocess = ClassifierPreprocess(model_config)
-            # preprocess = [model_config, classifier_preprocess]
-            preprocess = [classifier_preprocess.config, classifier_preprocess]
+            if weights_cls:
+                model = getattr(pth_models, pth_model_name)(weights=None, aux_logits=True) \
+                    if pth_model_name in ['googlenet', 'inception_v3'] \
+                    else getattr(pth_models, pth_model_name)(weights=None)  # for fine-tuning
+            else:
+                model = getattr(pth_models, pth_model_name)(pretrained=False, aux_logits=True) \
+                    if pth_model_name in ['googlenet', 'inception_v3'] \
+                    else getattr(pth_models, pth_model_name)(pretrained=False)
+
+            print(f"The model is loaded from torchvision with version {torchvision.__version__}! \n"
+                  "The preprocess of the pretrained weights of torchvision with version >= 0.13 is not applicable!")
+
         except AttributeError as err:
             print(f"Attribute Error - {err}! \n"
-                  f" Check weights class ( {weights_cls} ) is correct and "
-                  f"is available in the torchvision with version {torchvision.__version__}!")
-
-    print(f"The model is loaded from torchvision with version {torchvision.__version__}! \n"
-          "The preprocess of the pretrained weights of torchvision with version >= 0.13 is not applicable!")
+                  f" Check {pth_model_name} is available in the torchvision with version {torchvision.__version__}!.!")
 
     return model, preprocess
 
@@ -299,14 +293,27 @@ def load_model(pth_model_name="resnet18", pretrained=True):
     # ----- modify the last layer for classification, and the model used in notebook should be modified too.
     if 'resnet' in pth_model_name:  # ResNet
         model_type = "ResNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
+        if tv >= 13:  # use weights parameter for torchvision with version > 13
+            print("torchvision version: %d" % tv)
+            weights_cls = pth_model_name.replace("resnet", "ResNet") + "_Weights"
+
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         if model is not None:
             model.fc = torch.nn.Linear(model.fc.in_features,
                                        2) # for resnet model must add block expansion factor 4
 
     elif 'mobilenet_v3' in pth_model_name:  # 'mobilenet_v3_large' or  'mobilenet_v3_small'
         model_type = "MobileNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
+        if tv >= 13:  # use weights parameter for torchvision with version > 13
+            print("torchvision version: %d" % tv)
+            if "small" in pth_model_name:
+                weights_cls = "MobileNet_V3_Small_Weights"
+            elif "large" in pth_model_name:
+                weights_cls = "MobileNet_V3_Large_Weights"
+            else:
+                assert weights_cls is not None, "Check the use of the name of the torch model!"
+
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         if model is not None:
             model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features,
                                                   2)  # for mobilenet_v3 model. must add block expansion factor 4
@@ -333,26 +340,53 @@ def load_model(pth_model_name="resnet18", pretrained=True):
     # for mobilenet_v2 model. must add block expansion factor 4
     elif pth_model_name == 'mobilenet_v2':
         model_type = "MobileNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
+        if tv >= 13:  # use weights parameter for torchvision with version > 13
+            print("torchvision version: %d" % tv)
+            weights_cls = "MobileNet_V2_Weights"
+
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         if model is not None:
             model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features,
                                               2)  # for mobilenet_v2 model. must add block expansion factor 4
+
     elif pth_model_name == 'vgg11':  # VGGNet
         model_type = "VggNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
+        if tv >= 13:  # use weights parameter for torchvision with version > 13
+            print("torchvision version: %d" % tv)
+            weights_cls = "VGG11_Weights"
+
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         if model is not None:
             model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features,
                                               2)  # for VGG model. must add block expansion factor 4
+
     elif 'efficientnet' in pth_model_name:  # ResNet
         model_type = "EfficientNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
+        if tv >= 13:  # use weights parameter for torchvision with version > 13
+            print("torchvision version: %d" % tv)
+            if 'efficientnet_b' in pth_model_name:
+                weights_cls = pth_model_name.replace("efficientnet_b", "EfficientNet_B") + "_Weights"
+            elif 'efficientnet_v2_s' in pth_model_name:
+                weights_cls = pth_model_name.replace("efficientnet_v2_s", "EfficientNet_V2_S") + "_Weights"
+            elif 'efficientnet_v2_m' in pth_model_name:
+                weights_cls = pth_model_name.replace("efficientnet_v2_m", "EfficientNet_V2_M") + "_Weights"
+            elif 'efficientnet_v2_l' in pth_model_name:
+                weights_cls = pth_model_name.replace("efficientnet_v2_l", "EfficientNet_V2_L") + "_Weights"
+            else:
+                raise ValueError(f"Unsupported model type {pth_model_name}")
+
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         if model is not None:
             model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)  # for efficientnet model
         # model.classifier[0].dropout = torch.nn.Dropout(p=dropout)
 
     elif pth_model_name == 'inception_v3':  # Inception_v3
         model_type = "InceptionNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
+        if tv >= 13:  # use weights parameter for torchvision with version > 13
+            print("torchvision version: %d" % tv)
+            weights_cls = "Inception_V3_Weights"
+
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         # model.dropout = torch.nn.Dropout(p=dropout)
         if model is not None:
             model.fc = torch.nn.Linear(model.fc.in_features, 2)
@@ -361,7 +395,11 @@ def load_model(pth_model_name="resnet18", pretrained=True):
 
     elif pth_model_name == 'googlenet':  # Inception_v3
         model_type = "GoogleNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
+        if tv >= 13:  # use weights parameter for torchvision with version > 13
+            print("torchvision version: %d" % tv)
+            weights_cls = "GoogLeNet_Weights"
+
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         if model is not None:
             model.fc = torch.nn.Linear(model.fc.in_features, 2)
             # model.dropout = torch.nn.Dropout(p=dropout)
@@ -373,19 +411,31 @@ def load_model(pth_model_name="resnet18", pretrained=True):
 
     elif "densenet" in pth_model_name:  # densenet121, densenet161, densenet169, densenet201
         model_type = "DenseNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
+        if tv >= 13:  # use weights parameter for torchvision with version > 13
+            print("torchvision version: %d" % tv)
+            weights_cls = pth_model_name.replace("densenet", "DenseNet") + "_Weights"
+
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         if model is not None:
             model.classifier = torch.nn.Linear(model.classifier.in_features, 2)
 
     elif "shufflenet_v2" in pth_model_name:  # shufflenet_v2_x1_0 or shufflenet_v2_x0_5
         model_type = "ShuffleNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
+        if tv >= 13:  # use weights parameter for torchvision with version > 13
+            print("torchvision version: %d" % tv)
+            weights_cls = pth_model_name.replace("shufflenet_v2_x", "ShuffleNet_V2_X") + "_Weights"
+
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         if model is not None:
             model.fc = torch.nn.Linear(model.fc.in_features, 2)
 
     elif "mnasnet" in pth_model_name:  # mnasnet1_0 or mnasnet0_5
         model_type = "MnasNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
+        if tv >= 13:  # use weights parameter for torchvision with version > 13
+            print("torchvision version: %d" % tv)
+            weights_cls = pth_model_name.replace("mnasnet", "MNASNet") + "_Weights"
+
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         if model is not None:
             model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)
 
@@ -395,7 +445,13 @@ def load_model(pth_model_name="resnet18", pretrained=True):
         # vit model is not available for jetson nano run in a torch vision version < 0.12
         model_type = "ViTNet"
         # enter the code to convert pytorch 'vit' model so that can be used in Jetbot application.
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
+        if tv >= 13:  # use weights parameter for torchvision with version > 13
+            print("torchvision version: %d" % tv)
+            weights_cls_lst = list(pth_model_name.replace("vit", "ViT"))
+            weights_cls_lst[4] = weights_cls_lst[4].upper()
+            weights_cls = ''.join(weights_cls_lst) + "_Weights"
+
+        model, preprocess = load_pth_model(pth_model_name, weights_cls, pretrained)
         if model is not None:
             # model.fc = torch.nn.Linear(model.fc.in_features, 2)
             model.heads[-1] = torch.nn.Linear(model.heads[-1].in_features, 2)
