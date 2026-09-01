@@ -18,7 +18,8 @@ def plot_exec_time(execution_time, model_name, model_str):
         min_execute_time = np.amin(execute_time)
 
     except ValueError as err:
-        print(f"The execution time of {model_name} is invalid. {err}")
+        print(f"The execution time of {model_name} is invalid or empty, and will not continue to plot. \n"
+              f"    error: {err}")
 
     else:
     # fps = np.array(fps)
