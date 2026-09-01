@@ -176,6 +176,7 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
                 float(self.speed_fm + self.turn_gain_fm * center[0] + self.steering_bias_fm),   # left motor
                 float(self.speed_fm - self.turn_gain_fm * center[0] + self.steering_bias_fm)    # right motor
             )
+            print(f"left motor: {self.robot.left_motor.value}; right motor: {self.robot.right_motor.value}")
 
         # update image widget
         self.cap_image = bgr8_to_jpeg(cv2.resize(self.current_image,
