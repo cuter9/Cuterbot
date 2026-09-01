@@ -165,6 +165,7 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
                 return
             else:
                 self.no_detect -= 1  # observe for a duration for the miss of object detection
+                print(f"left motor: {self.robot.left_motor.value}; right motor: {self.robot.right_motor.value}")
             # self.robot.forward(float(self.speed))
 
         # otherwise, steer towards target
