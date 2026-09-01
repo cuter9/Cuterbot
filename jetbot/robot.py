@@ -51,9 +51,11 @@ class Robot(SingletonConfigurable):
     # config
     i2c_bus = traitlets.Integer(default_value=1).tag(config=True)
     left_motor_channel = traitlets.Integer(default_value=1).tag(config=True)
-    left_motor_alpha = traitlets.Float(default_value=1.0).tag(config=True)
+    # left_motor_alpha = traitlets.Float(default_value=1.0).tag(config=True)
+    left_motor_alpha = traitlets.Float(default_value=0.8).tag(config=True)
     right_motor_channel = traitlets.Integer(default_value=2).tag(config=True)
-    right_motor_alpha = traitlets.Float(default_value=1.0).tag(config=True)
+    # right_motor_alpha = traitlets.Float(default_value=1.0).tag(config=True)
+    right_motor_alpha = traitlets.Float(default_value=0.8).tag(config=True)
 
     # Adafruit Hardware
     if 96 in addresses:
