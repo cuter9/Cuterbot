@@ -133,11 +133,11 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
 
         # select detections that match selected class label
         # get detection closest to the center of view field and draw it
-        cls_obj = self.closest_object
-        if cls_obj is not None:
+        # cls_obj = self.closest_object
+        if self.closest_object is not None:
             self.is_detected = True
             self.no_detect = self.detect_duration_max  # set max detection no to prevent temporary loss of object detection
-            bbox = cls_obj['bbox']
+            bbox = self.closest_object['bbox']
             cv2.rectangle(self.current_image, (int(self.img_width * bbox[0]), int(self.img_height * bbox[1])),
                           (int(self.img_width * bbox[2]), int(self.img_height * bbox[3])), (0, 255, 0), 5)
 
@@ -153,7 +153,7 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
             self.e_view_prev = self.e_view
 
         # otherwise go forward if no target detected for more than self.detect_duration_max times
-        if cls_obj is None:
+        if self.closest_object is None:
             if self.no_detect <= 0:  # if object is not detected for a duration, road cruising
                 self.mean_view = 0.0
                 self.mean_view_prev = 0.0
@@ -171,7 +171,7 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
         # otherwise, steer towards target
         else:
             # move the robot forward and steer proportional target's x-distance from center
-            center = object_center_detection(cls_obj)
+            center = object_center_detection(self.closest_object)
             self.robot.set_motors(
                 float(self.speed_fm + self.turn_gain_fm * center[0] + self.steering_bias_fm),   # left motor
                 float(self.speed_fm - self.turn_gain_fm * center[0] + self.steering_bias_fm)    # right motor
