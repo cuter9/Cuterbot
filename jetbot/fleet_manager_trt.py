@@ -183,7 +183,6 @@ class FleeterTRT(ObjectFollower, RoadCruiserTRT):
         self.cap_image = bgr8_to_jpeg(cv2.resize(self.current_image,
                                                  (self.width_display, self.height_display),
                                                  interpolation=cv2.INTER_LINEAR))
-        # self.cap_image = bgr8_to_jpeg(self.current_image)
 
         # print("ok!")
         # return self.cap_image
