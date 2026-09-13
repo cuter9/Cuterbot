@@ -3,8 +3,8 @@
 # shellcheck disable=SC2164
 cd /home/cuterbot/Cuterbot
 
-sudo git pull origin v2.01
-sudo git reset --hard origin/v2.01
+sudo git pull origin master
+sudo git reset --hard origin/master
 # shellcheck disable=SC1065
 sleep 5
 # shellcheck disable=SC1072
