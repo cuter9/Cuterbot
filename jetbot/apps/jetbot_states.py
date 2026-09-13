@@ -43,8 +43,6 @@ class nano_states:
     def pwr_states(self):
         while self.jetson.ok():
             pwr_sensor = self.jetson.power
-            # bus_voltage = self.pwr_sensor['tot']['volt']/1000
-            # shunt_voltage = self.pwr_sensor['tot']['curr']/1000
             in_current = pwr_sensor['tot']['curr'] / 1000
             in_voltage = pwr_sensor['tot']['volt'] / 1000
             in_power = pwr_sensor['tot']['power'] / 1000
@@ -70,33 +68,3 @@ class jetbot_states:
                 "shunt_volt": shunt_voltage,
                 "bus_volt": bus_voltage,
                 "in_pwr": in_power}
-
-'''
-if __name__ == '__main__':
-    # import time
-    import stats
-    # states = nano_states()
-    # states = jetbot_states()
-    # while True:
-    #    print(states.pwr_states)
-        # states.jetson.start()
-    # print(pwr_states.keys())
-    # print(pwr_states)
-    # time.sleep(1)
-    # while True:
-    #    print(pwr_states)
-    #    time.sleep(1)
-    
-    # with jtop() as jetson:
-    #    while jetson.ok():
-    #        stats = jetson.stats
-    #        print(stats['Power TOT'])
-    #        time.sleep(1)
-
-    print("------------------------------")
-    print("Bus Voltage: %3.2f V " % pwr_state["end_volt"])
-    print("Shunt Voltage: %3.2f mV " % pwr_state["shunt_volt"])
-    print("Load Voltage:  %3.2f V" % pwr_state["in_volt"])
-    print("Current:  %3.2f mA" % pwr_state["in_current"])
-    print()
-'''
