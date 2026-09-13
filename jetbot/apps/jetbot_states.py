@@ -29,7 +29,7 @@ I2C_BUS = 6  # jetbot i2c bus no and address of ina3221
 I2C_ADDRESS = 0x40
 
 
-class nano_states:
+class NanoStates:
     def __init__(self):
         self.jetson = jtop()
         self.jetson.start()
@@ -50,7 +50,7 @@ class nano_states:
                     "in_current": in_current,
                     "in_pwr": in_power}
 
-class jetbot_states:
+class JetbotStates:
     def __init__(self):
         self.pwr_sensor = INA3221(twi=I2C_BUS, force=True, addr=I2C_ADDRESS)  # force : force to read ic2 data
 
