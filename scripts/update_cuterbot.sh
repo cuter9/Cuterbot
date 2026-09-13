@@ -18,3 +18,11 @@ sudo "/home/cuterbot/Cuterbot/scripts/fix_files.sh"
 # shellcheck disable=SC2164
 cd "$HOME"
 
+if [ ! -d ${HOME}/model_repo ]; then
+    echo "Downloading models ------- "
+    ${HOME}/Cuterbot/scripts/download_model_repo.sh
+fi
+
+
+
+
