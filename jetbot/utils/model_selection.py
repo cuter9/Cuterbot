@@ -306,10 +306,8 @@ def load_model(pth_model_name="resnet18", pretrained=True):
 
     elif 'mobilenet_v3' in pth_model_name:  # 'mobilenet_v3_large' or  'mobilenet_v3_small'
         model_type = "MobileNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
-        if model is not None:
-            model.classifier[3] = torch.nn.Linear(model.classifier[3].in_features,
-                                                  2)  # for mobilenet_v3 model. must add block expansion factor 4
+        #
+
     elif "mobilenetv4" in pth_model_name:
         model_type = "MobileNet"
         # mobilenetv4 is included in timm.models.mobilenetv3
@@ -333,31 +331,22 @@ def load_model(pth_model_name="resnet18", pretrained=True):
     # for mobilenet_v2 model. must add block expansion factor 4
     elif pth_model_name == 'mobilenet_v2':
         model_type = "MobileNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
-        if model is not None:
-            model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features,
-                                              2)  # for mobilenet_v2 model. must add block expansion factor 4
+        #
+
     elif pth_model_name == 'vgg11':  # VGGNet
         model_type = "VggNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
-        if model is not None:
-            model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features,
-                                              2)  # for VGG model. must add block expansion factor 4
+        model_type = "MobileNet"
+        #
+
     elif 'efficientnet' in pth_model_name:  # ResNet
         model_type = "EfficientNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
-        if model is not None:
-            model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)  # for efficientnet model
-        # model.classifier[0].dropout = torch.nn.Dropout(p=dropout)
+        model_type = "MobileNet"
+        #
 
     elif pth_model_name == 'inception_v3':  # Inception_v3
         model_type = "InceptionNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
-        # model.dropout = torch.nn.Dropout(p=dropout)
-        if model is not None:
-            model.fc = torch.nn.Linear(model.fc.in_features, 2)
-            if model.aux_logits:
-                model.AuxLogits.fc = torch.nn.Linear(model.AuxLogits.fc.in_features, 2)
+        model_type = "MobileNet"
+        #
 
     elif pth_model_name == 'googlenet':  # Inception_v3
         model_type = "GoogleNet"
@@ -373,21 +362,18 @@ def load_model(pth_model_name="resnet18", pretrained=True):
 
     elif "densenet" in pth_model_name:  # densenet121, densenet161, densenet169, densenet201
         model_type = "DenseNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
-        if model is not None:
-            model.classifier = torch.nn.Linear(model.classifier.in_features, 2)
+        model_type = "MobileNet"
+        #
 
     elif "shufflenet_v2" in pth_model_name:  # shufflenet_v2_x1_0 or shufflenet_v2_x0_5
         model_type = "ShuffleNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
-        if model is not None:
-            model.fc = torch.nn.Linear(model.fc.in_features, 2)
+        model_type = "MobileNet"
+        #
 
     elif "mnasnet" in pth_model_name:  # mnasnet1_0 or mnasnet0_5
         model_type = "MnasNet"
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
-        if model is not None:
-            model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)
+        model_type = "MobileNet"
+        #
 
     elif "vit" in pth_model_name:  #  vit_b_16,  vit_b_32, vit_l_16, vit_l_32, vit_h_14
         # need to pip install flash-attn --no-build-isolation in linux environment only
@@ -395,19 +381,9 @@ def load_model(pth_model_name="resnet18", pretrained=True):
         # vit model is not available for jetson nano run in a torch vision version < 0.12
         model_type = "ViTNet"
         # enter the code to convert pytorch 'vit' model so that can be used in Jetbot application.
-        model, preprocess = load_pth_model(pth_model_name, pretrained)
-        if model is not None:
-            # model.fc = torch.nn.Linear(model.fc.in_features, 2)
-            model.heads[-1] = torch.nn.Linear(model.heads[-1].in_features, 2)
-    '''
-    else:
-        assert (
-                model is not None and model_type is not None), \
-            f"Check if the model with the model name you set is available in the torchvision package of the version {torchvision.__version__}."
+        model_type = "MobileNet"
+        #
 
-    assert (model is not None), \
-        f"Check if the model with the model name you set is available in the torchvision package of the version {torchvision.__version__}."
-    '''
     return model, model_type, preprocess
 
 class model_selection(HasTraits):
