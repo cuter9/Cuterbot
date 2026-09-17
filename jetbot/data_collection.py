@@ -8,6 +8,8 @@ from traitlets import HasTraits, Unicode, Float
 class DataCollection(HasTraits):
     widget_image = traitlets.Any()
     xy_image = traitlets.Any()
+    xy_point_image = traitlets.Any()
+    bbox_image = traitlets.Any()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
