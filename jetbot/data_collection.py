@@ -47,12 +47,12 @@ class DataCollection(HasTraits):
     def get_bbox_image(self, bbox):
         image = cv2.resize(self.camera.value, (self.width_display, self.height_display),
                            interpolation=cv2.INTER_LINEAR)
-        x1 = bbox[0][0] * self.width_display / 2 + self.width_display / 2
-        y1 = bbox[0][1] * self.height_display / 2 + self.height_display / 2
-        x2 = bbox[1][0] * self.width_display / 2 + self.width_display / 2
-        y2 = bbox[1][1] * self.height_display / 2 + self.height_display / 2
+        x1 = int(bbox[0][0] * self.width_display / 2 + self.width_display / 2)
+        y1 = int(bbox[0][1] * self.height_display / 2 + self.height_display / 2)
+        x2 = int(bbox[1][0] * self.width_display / 2 + self.width_display / 2)
+        y2 = int(bbox[1][1] * self.height_display / 2 + self.height_display / 2)
         print(f"bbox:{x1}, {y1}, {x2}, {y2}")
-        cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 3)
+        cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), cv2.LINE_AA)
         self.bbox_image = bgr8_to_jpeg(image)
 
     def get_widget_image(self):
