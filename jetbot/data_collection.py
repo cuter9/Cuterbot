@@ -51,6 +51,7 @@ class DataCollection(HasTraits):
         y1 = bbox[0][1] * self.height_display / 2 + self.height_display / 2
         x2 = bbox[1][0] * self.width_display / 2 + self.width_display / 2
         y2 = bbox[1][1] * self.height_display / 2 + self.height_display / 2
+        print(f"bbox:{x1}, {y1}, {x2}, {y2}")
         cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 3)
         self.bbox_image = bgr8_to_jpeg(image)
 
