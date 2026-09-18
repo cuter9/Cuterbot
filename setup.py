@@ -17,6 +17,7 @@ setup(
     description='An open-source robot based on NVIDIA Jetson Nano',
     packages=find_packages(),
     install_requires=[
+        'numpy<=3.5',
         'Adafruit_MotorHat',
         'Adafruit-SSD1306',
     ],

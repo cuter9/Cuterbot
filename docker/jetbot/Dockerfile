@@ -8,7 +8,6 @@ FROM ${BASE_IMAGE}
 RUN python3 -m pip install pyserial pandas
 RUN python3 -m pip install pillow --force-reinstall
 ENV JETBOT_REPO_DIR=/opt/jetbot
-RUN pip3 install 'spidev<=3.5'
 COPY . ${JETBOT_REPO_DIR}
 RUN cd ${JETBOT_REPO_DIR} && python3 setup.py bdist_wheel && cd dist && pip3 install *.whl
 
